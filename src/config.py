@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -18,14 +17,8 @@ class BotConfig(BaseConfig):
 
 
 class DatabaseConfig(BaseConfig):
-    LOGIN_USER: str
-    PASSWORD: str
-    SERVERNAME: str
-    DBNAME: str
-    DRIVER: str
+    DB_PATH: str = str(BASE_DIR / "database.sqlite")
 
-    def pg_dsn(self) -> str:
-        return (
-            f"postgresql+{self.DRIVER}://{self.LOGIN_USER}:{self.PASSWORD}"
-            f"@{self.SERVERNAME}/{self.DBNAME}"
-        )
+    def sqlite_dsn(self) -> str:
+        """Return the SQLAlchemy SQLite DSN."""
+        return f"sqlite:///{self.DB_PATH}"
