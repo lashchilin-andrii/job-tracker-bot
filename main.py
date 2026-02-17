@@ -1,21 +1,19 @@
 import asyncio
 
 from aiogram import Bot, Dispatcher
-from aiogram.filters import Command
-from aiogram.types import Message
 
 from src.config import BotConfig
+from src.vacancy.handler import router as vacancy_router
+from src.user.handler import router as user_router
+from src.handler import router as base_router
 
 dp = Dispatcher()
 
-
-# Command handler
-@dp.message(Command("start"))
-async def command_start_handler(message: Message) -> None:
-    await message.answer("Hello! I'm a bot created with aiogram.")
+dp.include_router(vacancy_router)
+dp.include_router(user_router)
+dp.include_router(base_router)
 
 
-# Run the bot
 async def main() -> None:
     bot = Bot(token=BotConfig().BOT_TOKEN)
     await dp.start_polling(bot)
