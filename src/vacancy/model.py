@@ -10,10 +10,10 @@ from src.model import BaseAlchemyModel
 class VacancyModel(BaseAlchemyModel):
     __tablename__ = "vacancy"
 
-    vacancy_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    vacancy_id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
 

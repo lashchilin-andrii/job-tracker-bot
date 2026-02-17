@@ -8,8 +8,11 @@ dependencies = [
     "aiogram>=3.25.0",
     "aiosqlite>=0.22.1",
     "alembic>=1.18.4",
+    "beautifulsoup4>=4.14.3",
+    "lxml>=6.0.2",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.0",
+    "pytest>=9.0.2",
     "ruff>=0.15.1",
     "sqlalchemy>=2.0.46",
 ]

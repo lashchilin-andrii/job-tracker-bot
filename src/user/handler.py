@@ -1,26 +1,25 @@
 from aiogram import Router, F
 from aiogram.types import Message
+from uuid import uuid4
+
 
 from src.button import BUTTON_PROFILE
+from src.user.schema import User
+from src.user.service import user_to_str
 
 router = Router()
 
 
 @router.message(F.text == BUTTON_PROFILE)
 async def get_me(message: Message):
-    user = message.from_user
+    user_raw = message.from_user
 
-    user_id = user.id
-    username = user.username or "No username"
-    first_name = user.first_name
-    last_name = user.last_name or ""
-    language = user.language_code or "Unknown"
-
-    text = (
-        f"ID: {user_id}\n"
-        f"Username: @{username}\n"
-        f"Name: {first_name} {last_name}\n"
-        f"Lang: {language}"
+    user = User(
+        user_id=uuid4(),
+        user_name=user_raw.username,
+        user_first_name=user_raw.first_name,
+        user_last_name=user_raw.last_name,
+        user_language=user_raw.language_code,
     )
 
-    await message.answer(text)
+    await message.answer(user_to_str(user=user))
