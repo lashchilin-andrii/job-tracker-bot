@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.database import BaseAlchemyModel
+from src.model import BaseAlchemyModel
 from src.config import DatabaseConfig
 
 from src.vacancy.model import VacancyModel  # noqa: F401
