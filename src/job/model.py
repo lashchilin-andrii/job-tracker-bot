@@ -1,8 +1,6 @@
 import uuid
-
-from sqlalchemy import String
+from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
-
 from src.model import BaseAlchemyModel
 
 
@@ -16,4 +14,12 @@ class JobModel(BaseAlchemyModel):
         nullable=False,
     )
 
-    job_name: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    job_location: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_snippet: Mapped[str] = mapped_column(Text, nullable=True)
+    job_salary: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_source: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_type: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_link: Mapped[str] = mapped_column(String(250), nullable=True)
+    job_company: Mapped[str] = mapped_column(String(100), nullable=True)
+    job_updated: Mapped[str] = mapped_column(String(50), nullable=True)

@@ -15,7 +15,6 @@ def search_jobs(keywords: str, location: str) -> list[JoobleJob]:
     return [JoobleJob(**job) for job in parsed.get("jobs", [])]
 
 
-# Example usage
 jobs = search_jobs("python", "Remote")
 for job in jobs:
     print(job)
