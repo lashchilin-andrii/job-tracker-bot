@@ -22,7 +22,7 @@ target_metadata = BaseAlchemyModel.metadata
 
 config.set_main_option(
     "sqlalchemy.url",
-    DatabaseConfig().sqlite_dsn(),
+    DatabaseConfig().DB_PATH,
 )
 
 
@@ -74,3 +74,5 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+print("---> ", config.get_main_option("sqlalchemy.url"))

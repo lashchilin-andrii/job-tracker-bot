@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from src.config import DatabaseConfig
 
 engine = create_engine(
-    url=DatabaseConfig().sqlite_dsn(),
+    url=DatabaseConfig().DB_PATH,
     echo=False,
 )
 

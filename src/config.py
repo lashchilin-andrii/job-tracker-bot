@@ -17,8 +17,8 @@ class BotConfig(BaseConfig):
 
 
 class DatabaseConfig(BaseConfig):
-    DB_PATH: str = str(BASE_DIR / "database.sqlite")
+    DB_PATH: str = f"sqlite:///{BASE_DIR / 'database.sqlite'}"
 
-    def sqlite_dsn(self) -> str:
-        """Return the SQLAlchemy SQLite DSN."""
-        return f"sqlite:///{self.DB_PATH}"
+
+class ApiConfig(BaseConfig):
+    JOOBLE_API_KEY: str

@@ -1,14 +1,21 @@
 import http.client
+import json
+
+from src.config import ApiConfig
 
 host = "jooble.org"
-key = "09dc1ce1-762b-4969-9d9c-a8075ef64352"
 
 connection = http.client.HTTPConnection(host)
-# request headers
+
 headers = {"Content-type": "application/json"}
-# json query
-body = "{'keywords': 'python', 'location': 'Remote'}"
-connection.request("POST", "/api/" + key, body, headers)
+
+body = json.dumps({"keywords": "python", "location": "Remote"})
+
+connection.request("POST", "/api/" + ApiConfig().JOOBLE_API_KEY, body, headers)
 response = connection.getresponse()
-print(response.status, response.reason)
-print(response.read())
+
+data = response.read().decode("utf-8")
+parsed = json.loads(data)
+
+# Pretty print JSON
+print(json.dumps(parsed, indent=4, ensure_ascii=False))
