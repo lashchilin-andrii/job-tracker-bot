@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Job(BaseModel):
+class JoobleJob(BaseModel):
     title: str
     location: str
     snippet: str

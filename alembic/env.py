@@ -8,7 +8,7 @@ from alembic import context
 from src.model import BaseAlchemyModel
 from src.config import DatabaseConfig
 
-from src.vacancy.model import VacancyModel  # noqa: F401
+from src.job.model import JobModel  # noqa: F401
 from src.user.model import UserModel  # noqa: F401
 
 config = context.config

@@ -1,21 +1,23 @@
+from src.config import ApiConfig
 import http.client
 import json
+from src.api.jooble.model import JoobleJob
 
-from src.config import ApiConfig
 
-host = "jooble.org"
+def search_jobs(keywords: str, location: str) -> list[JoobleJob]:
+    body = json.dumps({"keywords": keywords, "location": location})
+    connection = http.client.HTTPSConnection("jooble.org")
+    headers = {"Content-type": "application/json"}
+    connection.request("POST", f"/api/{ApiConfig().JOOBLE_API_KEY}", body, headers)
+    response = connection.getresponse()
+    data = response.read().decode("utf-8")
+    parsed = json.loads(data)
+    return [JoobleJob(**job) for job in parsed.get("jobs", [])]
 
-connection = http.client.HTTPConnection(host)
 
-headers = {"Content-type": "application/json"}
-
-body = json.dumps({"keywords": "python", "location": "Remote"})
-
-connection.request("POST", "/api/" + ApiConfig().JOOBLE_API_KEY, body, headers)
-response = connection.getresponse()
-
-data = response.read().decode("utf-8")
-parsed = json.loads(data)
-
-# Pretty print JSON
-print(json.dumps(parsed, indent=4, ensure_ascii=False))
+# Example usage
+jobs = search_jobs("python", "Remote")
+for job in jobs:
+    print(job)
+    print()
+    print()

@@ -5,6 +5,6 @@ from aiogram.types import Message
 router = Router()
 
 
-@router.message(Command("vacancy"))
+@router.message(Command("job"))
 async def start_handler(message: Message):
-    await message.answer("vacancies vacancies vacancies")
+    await message.answer("Job\nJob\nJob\nJob\nJob\nJob")
