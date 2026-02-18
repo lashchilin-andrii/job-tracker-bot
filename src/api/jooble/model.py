@@ -2,13 +2,13 @@ from pydantic import BaseModel
 
 
 class JoobleJob(BaseModel):
-    title: str
-    location: str
-    snippet: str
-    salary: str
-    source: str
-    type: str
-    link: str
-    company: str
-    updated: str
-    id: int
+    job_title: str
+    job_location: str
+    job_snippet: str
+    job_salary: str
+    job_source: str
+    job_type: str
+    job_link: str
+    job_company: str
+    job_updated: str
+    job_id: int
