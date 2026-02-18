@@ -1,4 +1,3 @@
-import pytest
 from src.user.schema import User
 from src.user.service import user_to_str
 
@@ -24,7 +23,7 @@ def test_profile_missing_optional_fields():
         user_name=None,
         user_first_name="Jane",
         user_last_name=None,
-        user_language='en',
+        user_language="en",
     )
 
     result = user_to_str(user)
