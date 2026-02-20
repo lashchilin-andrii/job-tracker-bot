@@ -2,7 +2,7 @@ import pytest
 from faker import Faker
 
 from src.user.schema import User
-from src.user.service import user_to_str
+from src.user.service import render_profile
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def test_profile(fake):
         user_language=fake.language_code(),
     )
 
-    result = user_to_str(user)
+    result = render_profile(user)
 
     expected = (
         f"@{user.user_name}\n"
@@ -39,7 +39,7 @@ def test_profile_missing_optional_fields(fake):
         user_language=fake.language_code(),
     )
 
-    result = user_to_str(user)
+    result = render_profile(user)
 
     expected = (
         f"@NoUsername\nName: {user.user_first_name}\nLanguage: {user.user_language}"
