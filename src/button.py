@@ -1,2 +1,2 @@
 BUTTON_PROFILE = "Profile"
-BUTTON_JOBS = "Jobs"
+BUTTON_SAVED_JOBS = "Saved Jobs"
