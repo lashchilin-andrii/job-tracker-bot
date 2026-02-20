@@ -1,10 +1,18 @@
+import uuid
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from src.job.model import JobModel
 
+# Example: list of JobModel instances
+jobs: list[JobModel] = [
+    JobModel(job_id=str(uuid.uuid4()), job_name="Backend Developer"),
+    JobModel(job_id=str(uuid.uuid4()), job_name="Frontend Developer"),
+    JobModel(job_id=str(uuid.uuid4()), job_name="Data Scientist"),
+]
 
-jobs_list_kb = InlineKeyboardMarkup(
+# Dynamically build inline keyboard
+jobs_list_inline_kb = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Job 1", callback_data="job_1")],
-        [InlineKeyboardButton(text="Job 2", callback_data="job_2")],
-        [InlineKeyboardButton(text="Job 3", callback_data="job_3")],
+        [InlineKeyboardButton(text=job.job_name, callback_data=f"job_{job.job_id}")]
+        for job in jobs
     ]
 )
