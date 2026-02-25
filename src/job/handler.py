@@ -13,7 +13,7 @@ from src.job.service import (
 from src.job.keyboard import get_navigation_keyboard
 from src.exceptions import InvalidCallbackData
 from src.api.jooble import get_jobs
-from src.job.state import GetAJobState
+from src.job.state import JobState
 
 router = Router()
 
@@ -92,19 +92,19 @@ async def get_a_job_callback_handler(callback: CallbackQuery, state: FSMContext)
 
 @router.message(F.text == BUTTON_GET_A_JOB)
 async def get_a_job_handler(message: Message, state: FSMContext):
-    await state.set_state(GetAJobState.keywords)
+    await state.set_state(JobState.keywords)
     await message.answer("Enter keywords (example: python backend):")
 
 
-@router.message(GetAJobState.keywords)
+@router.message(JobState.keywords)
 async def process_keywords(message: Message, state: FSMContext):
     await state.update_data(keywords=message.text)
-    await state.set_state(GetAJobState.location)
+    await state.set_state(JobState.location)
 
     await message.answer("Enter location (example: Remote, USA, Germany):")
 
 
-@router.message(GetAJobState.location)
+@router.message(JobState.location)
 async def process_location(message: Message, state: FSMContext):
     data = await state.get_data()
     keywords = data["keywords"]

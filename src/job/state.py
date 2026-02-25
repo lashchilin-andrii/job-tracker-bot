@@ -1,6 +1,6 @@
 from aiogram.fsm.state import StatesGroup, State
 
 
-class GetAJobState(StatesGroup):
+class JobState(StatesGroup):
     keywords = State()
     location = State()
