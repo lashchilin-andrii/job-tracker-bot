@@ -5,7 +5,7 @@ from src.job.model import JobModel
 from src.exceptions import InvalidCallbackData
 
 
-def get_all_jobs() -> list[JobModel]:
+def get_saved_jobs() -> list[JobModel]:
     return JobRepository().read_all()
 
 

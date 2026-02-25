@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.message(F.text == BUTTON_PROFILE)
-async def get_me(message: Message):
+async def profile_handler(message: Message):
     user = message.from_user
 
     await message.answer(render_profile(user_raw=user))
