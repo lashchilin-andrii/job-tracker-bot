@@ -27,7 +27,6 @@ class Job(BaseModel):
         if "Remote" in v:
             return f"{v} 🌍"
 
-        # US state pattern: "City, ST"
         if re.search(r",\s*[A-Z]{2}$", v):
             code = "US"
             flag = "".join(chr(127397 + ord(c)) for c in code)
@@ -52,13 +51,15 @@ class Job(BaseModel):
 
     @field_validator("job_updated", mode="before")
     @classmethod
-    def format_updated(cls, v):
+    def format_updated(cls, v: str):
         if not v:
             return v
+
         for fmt in ("%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
             try:
-                dt = datetime.strptime(v[: len(fmt.replace("%f", "000000"))], fmt)
+                dt = datetime.strptime(v, fmt)
                 return dt.strftime("%d %b %Y")
-            except Exception:
+            except ValueError:
                 continue
+
         return v

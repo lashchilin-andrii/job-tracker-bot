@@ -21,7 +21,6 @@ router = Router()
 @router.message(F.text == BUTTON_SAVED_JOBS)
 async def saved_jobs_handler(message: Message):
     jobs = get_saved_jobs()
-
     if not jobs:
         await message.answer("No jobs found.")
         return
@@ -35,19 +34,15 @@ async def saved_jobs_handler(message: Message):
 
 @router.callback_query(F.data.startswith("saved_job_"))
 async def saved_job_callback_handler(callback: CallbackQuery):
-    jobs = get_saved_jobs()
+    await callback.answer()
 
+    jobs = get_saved_jobs()
     try:
         job_id = get_job_id_from_callback(callback.data.replace("saved_", ""))
-    except InvalidCallbackData:
-        await callback.answer("Invalid request", show_alert=True)
-        return
-
-    try:
         index = next(i for i, j in enumerate(jobs) if str(j.job_id) == job_id)
         job = jobs[index]
-    except StopIteration:
-        await callback.answer("Job not found", show_alert=True)
+    except (InvalidCallbackData, StopIteration):
+        await callback.message.answer("Job not found or invalid request.")
         return
 
     await callback.message.edit_text(
@@ -56,29 +51,23 @@ async def saved_job_callback_handler(callback: CallbackQuery):
         reply_markup=get_navigation_keyboard(index, jobs, prefix="saved_job_"),
     )
 
-    await callback.answer()
-
 
 @router.callback_query(F.data.startswith("job_"))
 async def get_a_job_callback_handler(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+
     data = await state.get_data()
     jobs = data.get("found_jobs")
-
     if not jobs:
-        await callback.answer("Session expired. Please search again.", show_alert=True)
+        await callback.message.answer("Session expired. Please search again.")
         return
 
     try:
         job_id = get_job_id_from_callback(callback.data)
-    except InvalidCallbackData:
-        await callback.answer("Invalid request", show_alert=True)
-        return
-
-    try:
         index = next(i for i, j in enumerate(jobs) if str(j.job_id) == job_id)
         job = jobs[index]
-    except StopIteration:
-        await callback.answer("Job not found", show_alert=True)
+    except (InvalidCallbackData, StopIteration):
+        await callback.message.answer("Job not found or invalid request.")
         return
 
     await callback.message.edit_text(
@@ -86,8 +75,6 @@ async def get_a_job_callback_handler(callback: CallbackQuery, state: FSMContext)
         parse_mode="HTML",
         reply_markup=get_navigation_keyboard(index, jobs, prefix="job_"),
     )
-
-    await callback.answer()
 
 
 @router.message(F.text == BUTTON_GET_A_JOB)
@@ -100,7 +87,6 @@ async def get_a_job_handler(message: Message, state: FSMContext):
 async def process_keywords(message: Message, state: FSMContext):
     await state.update_data(keywords=message.text)
     await state.set_state(JobState.location)
-
     await message.answer("Enter location (example: Remote, USA, Germany):")
 
 
@@ -113,7 +99,6 @@ async def process_location(message: Message, state: FSMContext):
     await message.answer("Searching...")
 
     jobs = await asyncio.to_thread(get_jobs, keywords, location)
-
     if not jobs:
         await message.answer("No jobs found.")
         return
