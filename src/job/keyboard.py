@@ -6,7 +6,7 @@ from src.job.model import JobModel
 
 def get_navigation_keyboard(
     current_index: int, jobs: List[JobModel], prefix: str
-) -> InlineKeyboardMarkup:
+) -> List[List[InlineKeyboardButton]]:
     buttons = []
 
     if current_index > 0:
@@ -18,6 +18,13 @@ def get_navigation_keyboard(
             )
         )
 
+    buttons.append(
+        InlineKeyboardButton(
+            text=f"{current_index + 1}/{len(jobs)}",
+            callback_data="noop",
+        )
+    )
+
     if current_index < len(jobs) - 1:
         next_job = jobs[current_index + 1]
         buttons.append(
@@ -27,7 +34,24 @@ def get_navigation_keyboard(
             )
         )
 
-    if buttons:
-        return InlineKeyboardMarkup(inline_keyboard=[buttons])
+    return [buttons]
 
-    return InlineKeyboardMarkup(inline_keyboard=[])
+
+def get_service_keyboard() -> List[List[InlineKeyboardButton]]:
+    buttons = [
+        InlineKeyboardButton(text="row 2 btn 1", callback_data="noop"),
+        InlineKeyboardButton(text="row 2 btn 2", callback_data="noop"),
+    ]
+    return [buttons]
+
+
+def get_menu_keyboard(
+    current_index: int, jobs: List[JobModel], prefix: str
+) -> InlineKeyboardMarkup:
+    keyboard_rows = []
+
+    keyboard_rows += get_navigation_keyboard(current_index, jobs, prefix)
+
+    keyboard_rows += get_service_keyboard()
+
+    return InlineKeyboardMarkup(inline_keyboard=keyboard_rows)

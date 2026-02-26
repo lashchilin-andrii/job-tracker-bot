@@ -27,11 +27,6 @@ class Job(BaseModel):
         if "Remote" in v:
             return f"{v} 🌍"
 
-        if re.search(r",\s*[A-Z]{2}$", v):
-            code = "US"
-            flag = "".join(chr(127397 + ord(c)) for c in code)
-            return f"{v} {flag}"
-
         return v
 
     @field_validator("job_snippet", mode="before")
