@@ -6,7 +6,7 @@ from src.button import button_browse_jobs, button_my_jobs
 from src.job.service import (
     show_saved_jobs,
     handle_saved_job_callback,
-    handle_found_job_callback,
+    handle_browse_jobs_callback,
     start_job_search,
     process_keywords_step,
     process_location_step,
@@ -21,18 +21,18 @@ async def my_jobs_handler(message: Message):
     await show_saved_jobs(message)
 
 
-@router.callback_query(F.data.startswith(button_my_jobs.text + "_"))
+@router.callback_query(F.data.startswith(button_my_jobs.callback))
 async def saved_job_callback_handler(callback: CallbackQuery):
     await handle_saved_job_callback(callback)
 
 
-@router.callback_query(F.data.startswith("job_"))
-async def get_a_job_callback_handler(callback: CallbackQuery, state: FSMContext):
-    await handle_found_job_callback(callback, state)
+@router.callback_query(F.data.startswith(button_browse_jobs.callback))
+async def browse_jobs_callback_handler(callback: CallbackQuery, state: FSMContext):
+    await handle_browse_jobs_callback(callback, state)
 
 
 @router.message(F.text == button_browse_jobs.text)
-async def get_a_job_handler(message: Message, state: FSMContext):
+async def browse_jobs_handler(message: Message, state: FSMContext):
     await start_job_search(message, state)
 
 

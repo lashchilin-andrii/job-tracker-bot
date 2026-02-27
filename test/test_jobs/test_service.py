@@ -7,11 +7,12 @@ from src.job.service import (
     find_job_index,
     show_saved_jobs,
     handle_saved_job_callback,
-    handle_found_job_callback,
+    handle_browse_jobs_callback,
     process_keywords_step,
     process_location_step,
 )
 from src.job.model import JobModel
+from src.button import button_browse_jobs
 from src.exceptions import InvalidCallbackData
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
@@ -30,7 +31,7 @@ def test_get_job_id_from_callback_valid():
 
 def test_get_job_id_from_callback_invalid_empty():
     with pytest.raises(InvalidCallbackData):
-        get_job_id_from_callback("job_")
+        get_job_id_from_callback(button_browse_jobs.callback)
 
 
 def test_get_job_id_from_callback_invalid_none():
@@ -121,7 +122,7 @@ async def test_handle_found_job_callback(monkeypatch):
 
     fake_callback.data = "job_1"
 
-    await handle_found_job_callback(fake_callback, state)
+    await handle_browse_jobs_callback(fake_callback, state)
     fake_message.edit_text.assert_called_once()
 
 

@@ -18,7 +18,7 @@ from src.job.message import (
 from src.exceptions import InvalidCallbackData
 from src.api.jooble import get_jobs
 from src.job.state import JobState
-from src.button import button_my_jobs
+from src.button import button_my_jobs, button_browse_jobs
 
 
 def get_saved_jobs() -> list[JobModel]:
@@ -30,7 +30,7 @@ def get_job_id_from_callback(data: str | None) -> str:
         raise InvalidCallbackData("Callback data is empty")
 
     try:
-        prefix, job_id = data.split("_", 1)
+        job_id = data.split("_", 1)[-1]
     except ValueError:
         raise InvalidCallbackData("Invalid callback format")
 
@@ -66,7 +66,7 @@ async def show_saved_jobs(message: Message):
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(0, jobs, prefix=button_my_jobs.text + "_"),
+        reply_markup=get_menu_keyboard(0, jobs, prefix=button_my_jobs.callback),
     )
 
 
@@ -76,7 +76,9 @@ async def handle_saved_job_callback(callback: CallbackQuery):
     jobs = get_saved_jobs()
 
     try:
-        job_id = get_job_id_from_callback(callback.data.replace("saved_", ""))
+        job_id = get_job_id_from_callback(
+            callback.data.replace(button_my_jobs.callback, "")
+        )
         index = find_job_index(jobs, job_id)
         job = jobs[index]
     except InvalidCallbackData:
@@ -86,11 +88,11 @@ async def handle_saved_job_callback(callback: CallbackQuery):
     await callback.message.edit_text(
         render_job(job),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(index, jobs, prefix=button_my_jobs.text + "_"),
+        reply_markup=get_menu_keyboard(index, jobs, prefix=button_my_jobs.callback),
     )
 
 
-async def handle_found_job_callback(callback: CallbackQuery, state: FSMContext):
+async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
     data = await state.get_data()
@@ -111,7 +113,7 @@ async def handle_found_job_callback(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         render_job(job),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(index, jobs, prefix="job_"),
+        reply_markup=get_menu_keyboard(index, jobs, prefix=button_browse_jobs.callback),
     )
 
 
@@ -145,6 +147,6 @@ async def process_location_step(message: Message, state: FSMContext):
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(0, jobs, prefix="job_"),
+        reply_markup=get_menu_keyboard(0, jobs, prefix=button_browse_jobs.callback),
     )
     await state.set_state(None)

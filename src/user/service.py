@@ -9,14 +9,13 @@ def get_or_create_user(user_raw) -> UserModel:
     """
     Получаем пользователя из базы по Telegram ID или создаём нового.
     """
-    repo = UserRepository()
     user_id = str(user_raw.id)
 
-    db_user = repo.read_one_by_property("user_id", user_id)
+    db_user = UserRepository().read_one_by_property("user_id", user_id)
     if db_user:
         return db_user
 
-    return repo.create_one(
+    return UserRepository().create_one(
         UserModel(
             user_id=user_id,
             user_name=user_raw.user_name,
@@ -28,15 +27,12 @@ def get_or_create_user(user_raw) -> UserModel:
 
 
 def render_profile(user_raw) -> str:
-    """
-    Формируем текстовый профиль пользователя через Jinja2.
-    """
     user = User(
-        user_id=user_raw.user_id,
-        user_name=user_raw.user_name,
-        user_first_name=user_raw.user_first_name,
-        user_last_name=user_raw.user_last_name,
-        user_language=user_raw.user_language,
+        user_id=user_raw.id,
+        user_name=user_raw.username,
+        user_first_name=user_raw.first_name,
+        user_last_name=user_raw.last_name,
+        user_language=user_raw.language_code,
     )
 
     template_path = Path(__file__).parent / "template" / "profile.html"
