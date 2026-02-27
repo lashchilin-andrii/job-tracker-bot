@@ -22,9 +22,9 @@ def test_profile(fake):
     result = render_profile(user)
 
     expected = (
-        f"@{user.user_name}\n"
-        f"Name: {user.user_first_name} {user.user_last_name}\n"
-        f"Language: {user.user_language}"
+        f"@{user.user_name}\n\n"
+        f"🧑 Name: {user.user_first_name} {user.user_last_name}\n\n"
+        f"🌐 Language: {user.user_language}"
     )
 
     assert result == expected
@@ -41,8 +41,12 @@ def test_profile_missing_optional_fields(fake):
 
     result = render_profile(user)
 
+    print(result)
+
     expected = (
-        f"@NoUsername\nName: {user.user_first_name}\nLanguage: {user.user_language}"
+        f"@NoUsername\n\n"
+        f"🧑 Name: {user.user_first_name}\n\n"
+        f"🌐 Language: {user.user_language}"
     )
 
     assert result == expected
