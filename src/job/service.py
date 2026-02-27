@@ -14,7 +14,6 @@ from src.job.message import (
     MSG_SESSION_EXPIRED,
     MSG_ENTER_KEYWORDS,
     MSG_ENTER_LOCATION,
-    MSG_SEARCHING,
 )
 from src.exceptions import InvalidCallbackData
 from src.api.jooble import get_jobs
@@ -54,11 +53,6 @@ def render_job(job: JobModel) -> str:
         template = Template(f.read())
 
     return template.render(job=job)
-
-
-# ------------------------
-# ROUTER SERVICES
-# ------------------------
 
 
 async def show_saved_jobs(message: Message):
@@ -137,7 +131,7 @@ async def process_location_step(message: Message, state: FSMContext):
     keywords = data["keywords"]
     location = message.text
 
-    await message.answer(MSG_SEARCHING)
+    await message.answer(f"Keywords: {keywords}\nLocation: {location}")
 
     jobs = await asyncio.to_thread(get_jobs, keywords, location)
 
@@ -152,3 +146,4 @@ async def process_location_step(message: Message, state: FSMContext):
         parse_mode="HTML",
         reply_markup=get_menu_keyboard(0, jobs, prefix="job_"),
     )
+    await state.set_state(None)
