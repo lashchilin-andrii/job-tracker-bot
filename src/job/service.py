@@ -18,6 +18,7 @@ from src.job.message import (
 from src.exceptions import InvalidCallbackData
 from src.api.jooble import get_jobs
 from src.job.state import JobState
+from src.button import button_my_jobs
 
 
 def get_saved_jobs() -> list[JobModel]:
@@ -65,7 +66,7 @@ async def show_saved_jobs(message: Message):
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(0, jobs, prefix="saved_job_"),
+        reply_markup=get_menu_keyboard(0, jobs, prefix=button_my_jobs.text + "_"),
     )
 
 
@@ -85,7 +86,7 @@ async def handle_saved_job_callback(callback: CallbackQuery):
     await callback.message.edit_text(
         render_job(job),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(index, jobs, prefix="saved_job_"),
+        reply_markup=get_menu_keyboard(index, jobs, prefix=button_my_jobs.text + "_"),
     )
 
 

@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from src.button import BUTTON_NEXT, BUTTON_PREVIOUS
+from src.button import button_next, button_previous
 from src.job.model import JobModel
 
 
@@ -17,12 +17,12 @@ def get_navigation_keyboard(
         next_job = jobs[current_index + 1] if total > 1 else jobs[current_index]
 
         next_btn_1 = InlineKeyboardButton(
-            text=BUTTON_NEXT,
+            text=button_next.text,
             callback_data=f"{prefix}{next_job.job_id}",
         )
 
         next_btn_2 = InlineKeyboardButton(
-            text=BUTTON_NEXT,
+            text=button_next.text,
             callback_data=f"{prefix}{next_job.job_id}",
         )
 
@@ -32,12 +32,12 @@ def get_navigation_keyboard(
         prev_job = jobs[current_index - 1]
 
         prev_btn_1 = InlineKeyboardButton(
-            text=BUTTON_PREVIOUS,
+            text=button_previous.text,
             callback_data=f"{prefix}{prev_job.job_id}",
         )
 
         prev_btn_2 = InlineKeyboardButton(
-            text=BUTTON_PREVIOUS,
+            text=button_previous.text,
             callback_data=f"{prefix}{prev_job.job_id}",
         )
 
@@ -47,12 +47,12 @@ def get_navigation_keyboard(
     next_job = jobs[current_index + 1]
 
     prev_btn = InlineKeyboardButton(
-        text=BUTTON_PREVIOUS,
+        text=button_previous.text,
         callback_data=f"{prefix}{prev_job.job_id}",
     )
 
     next_btn = InlineKeyboardButton(
-        text=BUTTON_NEXT,
+        text=button_next.text,
         callback_data=f"{prefix}{next_job.job_id}",
     )
 

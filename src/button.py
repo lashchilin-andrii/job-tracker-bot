@@ -1,6 +1,8 @@
-BUTTON_PROFILE = "Profile"
-BUTTON_SAVED_JOBS = "Saved Jobs"
-BUTTON_GET_A_JOB = "Get a Job"
+from src.base.button import ButtonBase
 
-BUTTON_PREVIOUS = "Prev"
-BUTTON_NEXT = "Next"
+button_profile = ButtonBase(text="Profile", callback="profile")
+button_my_jobs = ButtonBase(text="My Jobs", callback="my_job")
+button_browse_jobs = ButtonBase(text="Browse Jobs", callback="browse_job")
+
+button_previous = ButtonBase(text="Prev", callback="prev")
+button_next = ButtonBase(text="Next", callback="next")
