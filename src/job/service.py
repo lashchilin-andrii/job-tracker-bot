@@ -21,7 +21,7 @@ from src.job.state import JobState
 from src.button import button_my_jobs, button_browse_jobs
 
 
-def get_saved_jobs() -> list[JobModel]:
+def get_my_jobs() -> list[JobModel]:
     return JobRepository().read_all()
 
 
@@ -56,8 +56,8 @@ def render_job(job: JobModel) -> str:
     return template.render(job=job)
 
 
-async def show_saved_jobs(message: Message):
-    jobs = get_saved_jobs()
+async def show_my_jobs(message: Message):
+    jobs = get_my_jobs()
 
     if not jobs:
         await message.answer(MSG_NO_JOBS_FOUND)
@@ -70,10 +70,10 @@ async def show_saved_jobs(message: Message):
     )
 
 
-async def handle_saved_job_callback(callback: CallbackQuery):
+async def handle_my_jobs_callback(callback: CallbackQuery):
     await callback.answer()
 
-    jobs = get_saved_jobs()
+    jobs = get_my_jobs()
 
     try:
         job_id = get_job_id_from_callback(

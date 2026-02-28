@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 
 from src.button import button_browse_jobs, button_my_jobs
 from src.job.service import (
-    show_saved_jobs,
-    handle_saved_job_callback,
+    show_my_jobs,
+    handle_my_jobs_callback,
     handle_browse_jobs_callback,
     start_job_search,
     process_keywords_step,
@@ -18,12 +18,12 @@ router = Router()
 
 @router.message(F.text == button_my_jobs.text)
 async def my_jobs_handler(message: Message):
-    await show_saved_jobs(message)
+    await show_my_jobs(message)
 
 
 @router.callback_query(F.data.startswith(button_my_jobs.callback))
-async def saved_job_callback_handler(callback: CallbackQuery):
-    await handle_saved_job_callback(callback)
+async def my_jobs_callback_handler(callback: CallbackQuery):
+    await handle_my_jobs_callback(callback)
 
 
 @router.callback_query(F.data.startswith(button_browse_jobs.callback))

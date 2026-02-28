@@ -2,11 +2,11 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 
 from src.job.service import (
-    get_saved_jobs,
+    get_my_jobs,
     get_job_id_from_callback,
     find_job_index,
-    show_saved_jobs,
-    handle_saved_job_callback,
+    show_my_jobs,
+    handle_my_jobs_callback,
     handle_browse_jobs_callback,
     process_keywords_step,
     process_location_step,
@@ -40,7 +40,7 @@ def test_get_job_id_from_callback_invalid_none():
 
 
 @patch("src.job.service.JobRepository")
-def test_get_saved_jobs(mock_repo_class):
+def test_get_my_jobs(mock_repo_class):
     mock_repo = MagicMock()
     mock_repo.read_all.return_value = [
         JobModel(job_id="1", job_name="Backend"),
@@ -48,7 +48,7 @@ def test_get_saved_jobs(mock_repo_class):
     ]
     mock_repo_class.return_value = mock_repo
 
-    jobs = get_saved_jobs()
+    jobs = get_my_jobs()
 
     assert len(jobs) == 2
     assert jobs[0].job_name == "Backend"
@@ -71,32 +71,32 @@ def test_find_job_index():
 # Asynchronous tests
 # -----------------------
 @pytest.mark.asyncio
-async def test_show_saved_jobs(monkeypatch):
+async def test_show_my_jobs(monkeypatch):
     fake_message = MagicMock(spec=Message)
     fake_message.answer = AsyncMock()
 
     fake_jobs = [JobModel(job_id="1", job_name="Backend")]
-    monkeypatch.setattr("src.job.service.get_saved_jobs", lambda: fake_jobs)
+    monkeypatch.setattr("src.job.service.get_my_jobs", lambda: fake_jobs)
 
-    await show_saved_jobs(fake_message)
+    await show_my_jobs(fake_message)
     fake_message.answer.assert_called()
 
 
 @pytest.mark.asyncio
-async def test_handle_saved_job_callback(monkeypatch):
+async def test_handle_my_job_callback(monkeypatch):
     fake_message = MagicMock()
     fake_message.answer = AsyncMock()
     fake_message.edit_text = AsyncMock()
 
     fake_callback = MagicMock()
-    fake_callback.data = "saved_job_1"
+    fake_callback.data = "my_job_1"
     fake_callback.message = fake_message
     fake_callback.answer = AsyncMock()
 
     fake_jobs = [JobModel(job_id="1", job_name="Backend")]
-    monkeypatch.setattr("src.job.service.get_saved_jobs", lambda: fake_jobs)
+    monkeypatch.setattr("src.job.service.get_my_jobs", lambda: fake_jobs)
 
-    await handle_saved_job_callback(fake_callback)
+    await handle_my_jobs_callback(fake_callback)
     fake_message.edit_text.assert_called()
 
 

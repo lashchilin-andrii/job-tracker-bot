@@ -61,8 +61,7 @@ def get_navigation_keyboard(
 
 def get_service_keyboard() -> list[list[InlineKeyboardButton]]:
     buttons = [
-        InlineKeyboardButton(text="🫩", callback_data="noop"),
-        InlineKeyboardButton(text="😪", callback_data="noop"),
+        InlineKeyboardButton(text="Save", callback_data="noop"),
     ]
     return [buttons]
 
