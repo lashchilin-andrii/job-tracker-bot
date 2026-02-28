@@ -12,7 +12,7 @@ def fake():
 
 def test_profile(fake):
     user = User(
-        user_id=fake.uuid4(),
+        user_id=fake.int(),
         user_name=fake.user_name(),
         user_first_name=fake.first_name(),
         user_last_name=fake.last_name(),
@@ -32,7 +32,7 @@ def test_profile(fake):
 
 def test_profile_missing_optional_fields(fake):
     user = User(
-        user_id=fake.uuid4(),
+        user_id=fake.int(),
         user_name=None,
         user_first_name=fake.first_name(),
         user_last_name=None,

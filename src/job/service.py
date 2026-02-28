@@ -5,12 +5,12 @@ from jinja2 import Template
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src.base.button import ButtonBase
 from src.job.repository import JobRepository
 from src.job.model import JobModel
 from src.job.keyboard import get_menu_keyboard
 from src.job.message import (
-    MSG_NO_JOBS_FOUND,
-    MSG_JOB_NOT_FOUND,
+    MSG_NOT_FOUND,
     MSG_SESSION_EXPIRED,
     MSG_ENTER_KEYWORDS,
     MSG_ENTER_LOCATION,
@@ -21,52 +21,66 @@ from src.job.state import JobState
 from src.button import button_my_jobs, button_browse_jobs
 
 
+template_path = Path(__file__).parent / "template" / "job.html"
+
+with open(template_path, "r", encoding="utf-8") as f:
+    job_template = Template(f.read())
+
+
 def get_my_jobs() -> list[JobModel]:
     return JobRepository().read_all()
-
-
-def get_job_id_from_callback(data: str | None) -> str:
-    if not data:
-        raise InvalidCallbackData("Callback data is empty")
-
-    try:
-        job_id = data.split("_", 1)[-1]
-    except ValueError:
-        raise InvalidCallbackData("Invalid callback format")
-
-    if not job_id:
-        raise InvalidCallbackData("Invalid job callback")
-
-    return job_id
 
 
 def find_job_index(jobs: list[JobModel], job_id: str) -> int:
     for i, job in enumerate(jobs):
         if str(job.job_id) == job_id:
             return i
-    raise InvalidCallbackData("Job not found")
+    raise InvalidCallbackData(MSG_NOT_FOUND)
 
 
 def render_job(job: JobModel) -> str:
-    template_path = Path(__file__).parent / "template" / "job.html"
+    return job_template.render(job=job)
 
-    with open(template_path, "r", encoding="utf-8") as f:
-        template = Template(f.read())
 
-    return template.render(job=job)
+async def show_job_page(
+    callback: CallbackQuery,
+    jobs: list[JobModel],
+    button: ButtonBase,
+):
+    try:
+        job_id = button.get_data_from_callback_without_prefix(callback.data)
+        index = find_job_index(jobs, job_id)
+        job = jobs[index]
+    except InvalidCallbackData:
+        await callback.message.answer(MSG_NOT_FOUND)
+        return
+
+    await callback.message.edit_text(
+        render_job(job),
+        parse_mode="HTML",
+        reply_markup=get_menu_keyboard(
+            index,
+            jobs,
+            callback_prefix=button.callback_prefix,
+        ),
+    )
 
 
 async def show_my_jobs(message: Message):
     jobs = get_my_jobs()
 
     if not jobs:
-        await message.answer(MSG_NO_JOBS_FOUND)
+        await message.answer(MSG_NOT_FOUND)
         return
 
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(0, jobs, prefix=button_my_jobs.callback),
+        reply_markup=get_menu_keyboard(
+            0,
+            jobs,
+            callback_prefix=button_my_jobs.callback_prefix,
+        ),
     )
 
 
@@ -75,20 +89,10 @@ async def handle_my_jobs_callback(callback: CallbackQuery):
 
     jobs = get_my_jobs()
 
-    try:
-        job_id = get_job_id_from_callback(
-            callback.data.replace(button_my_jobs.callback, "")
-        )
-        index = find_job_index(jobs, job_id)
-        job = jobs[index]
-    except InvalidCallbackData:
-        await callback.message.answer(MSG_JOB_NOT_FOUND)
-        return
-
-    await callback.message.edit_text(
-        render_job(job),
-        parse_mode="HTML",
-        reply_markup=get_menu_keyboard(index, jobs, prefix=button_my_jobs.callback),
+    await show_job_page(
+        callback,
+        jobs,
+        button_my_jobs,
     )
 
 
@@ -102,18 +106,10 @@ async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext
         await callback.message.answer(MSG_SESSION_EXPIRED)
         return
 
-    try:
-        job_id = get_job_id_from_callback(callback.data)
-        index = find_job_index(jobs, job_id)
-        job = jobs[index]
-    except InvalidCallbackData:
-        await callback.message.answer(MSG_JOB_NOT_FOUND)
-        return
-
-    await callback.message.edit_text(
-        render_job(job),
-        parse_mode="HTML",
-        reply_markup=get_menu_keyboard(index, jobs, prefix=button_browse_jobs.callback),
+    await show_job_page(
+        callback,
+        jobs,
+        button_browse_jobs,
     )
 
 
@@ -125,12 +121,12 @@ async def start_job_search(message: Message, state: FSMContext):
 async def process_keywords_step(message: Message, state: FSMContext):
     await state.update_data(keywords=message.text)
     await state.set_state(JobState.location)
-
     await message.answer(MSG_ENTER_LOCATION)
 
 
 async def process_location_step(message: Message, state: FSMContext):
     data = await state.get_data()
+
     keywords = data["keywords"]
     location = message.text
 
@@ -139,7 +135,7 @@ async def process_location_step(message: Message, state: FSMContext):
     jobs = await asyncio.to_thread(get_jobs, keywords, location)
 
     if not jobs:
-        await message.answer(MSG_NO_JOBS_FOUND)
+        await message.answer(MSG_NOT_FOUND)
         return
 
     await state.update_data(found_jobs=jobs)
@@ -147,6 +143,11 @@ async def process_location_step(message: Message, state: FSMContext):
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(0, jobs, prefix=button_browse_jobs.callback),
+        reply_markup=get_menu_keyboard(
+            0,
+            jobs,
+            callback_prefix=button_browse_jobs.callback_prefix,
+        ),
     )
+
     await state.set_state(None)

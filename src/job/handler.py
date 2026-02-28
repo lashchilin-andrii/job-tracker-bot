@@ -21,12 +21,12 @@ async def my_jobs_handler(message: Message):
     await show_my_jobs(message)
 
 
-@router.callback_query(F.data.startswith(button_my_jobs.callback))
+@router.callback_query(F.data.startswith(button_my_jobs.callback_prefix))
 async def my_jobs_callback_handler(callback: CallbackQuery):
     await handle_my_jobs_callback(callback)
 
 
-@router.callback_query(F.data.startswith(button_browse_jobs.callback))
+@router.callback_query(F.data.startswith(button_browse_jobs.callback_prefix))
 async def browse_jobs_callback_handler(callback: CallbackQuery, state: FSMContext):
     await handle_browse_jobs_callback(callback, state)
 

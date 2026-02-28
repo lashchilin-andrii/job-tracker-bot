@@ -31,7 +31,7 @@ def test_get_job_id_from_callback_valid():
 
 def test_get_job_id_from_callback_invalid_empty():
     with pytest.raises(InvalidCallbackData):
-        get_job_id_from_callback(button_browse_jobs.callback)
+        get_job_id_from_callback(button_browse_jobs.callback_prefix)
 
 
 def test_get_job_id_from_callback_invalid_none():
