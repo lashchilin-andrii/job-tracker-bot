@@ -14,10 +14,11 @@ class JobModel(BaseAlchemyModel):
         nullable=False,
     )
 
-    job_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    job_title: Mapped[str] = mapped_column(String(100), nullable=True)
     job_location: Mapped[str] = mapped_column(String(50), nullable=True)
     job_salary: Mapped[str] = mapped_column(String(50), nullable=True)
     job_source: Mapped[str] = mapped_column(String(50), nullable=True)
+    job_snippet: Mapped[str] = mapped_column(String(500), nullable=True)
     job_type: Mapped[str] = mapped_column(String(50), nullable=True)
     job_link: Mapped[str] = mapped_column(String(250), nullable=True)
     job_company: Mapped[str] = mapped_column(String(100), nullable=True)

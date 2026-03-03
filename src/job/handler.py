@@ -11,19 +11,19 @@ from src.job.service import (
     process_keywords_step,
     process_location_step,
 )
-from src.job.state import JobState
+from src.job.state import JobSearchParametersState
 
 router = Router()
 
 
 @router.message(F.text == button_my_jobs.text)
-async def my_jobs_handler(message: Message):
-    await show_my_jobs(message)
+async def my_jobs_handler(message: Message, state: FSMContext):
+    await show_my_jobs(message, state)
 
 
 @router.callback_query(F.data.startswith(button_my_jobs.callback_prefix))
-async def my_jobs_callback_handler(callback: CallbackQuery):
-    await handle_my_jobs_callback(callback)
+async def my_jobs_callback_handler(callback: CallbackQuery, state: FSMContext):
+    await handle_my_jobs_callback(callback, state)
 
 
 @router.callback_query(F.data.startswith(button_browse_jobs.callback_prefix))
@@ -36,11 +36,11 @@ async def browse_jobs_handler(message: Message, state: FSMContext):
     await start_job_search(message, state)
 
 
-@router.message(JobState.keywords)
+@router.message(JobSearchParametersState.keywords)
 async def process_keywords(message: Message, state: FSMContext):
     await process_keywords_step(message, state)
 
 
-@router.message(JobState.location)
+@router.message(JobSearchParametersState.location)
 async def process_location(message: Message, state: FSMContext):
     await process_location_step(message, state)

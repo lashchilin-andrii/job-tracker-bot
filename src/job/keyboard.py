@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from src.button import button_next, button_previous
+from src.button import button_next, button_previous, button_save_job
 from src.job.model import JobModel
 
 
@@ -36,10 +36,12 @@ def get_navigation_keyboard(
 
 
 def get_service_keyboard() -> list[list[InlineKeyboardButton]]:
-    buttons = [
-        InlineKeyboardButton(text="Save", callback_data="noop"),
-    ]
-    return [buttons]
+
+    save_btn = InlineKeyboardButton(
+        text=button_save_job.text,
+        callback_data=f"{button_save_job.callback_prefix}",
+    )
+    return [[save_btn]]
 
 
 def get_menu_keyboard(
