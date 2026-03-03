@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from src.base.button import ButtonBase
 from src.job.repository import JobRepository
+from src.user_job.repository import UserJobRepository
 from src.job.model import JobModel
 from src.job.keyboard import get_menu_keyboard
 from src.job.message import (
@@ -18,22 +19,10 @@ from src.job.message import (
 from src.exceptions import InvalidCallbackData
 from src.api.jooble import get_jobs
 from src.job.state import CurrentJobState, JobSearchParametersState
-from src.button import button_my_jobs, button_browse_jobs
+from src.button import button_my_jobs, button_browse_jobs, button_save_job
 
-
-# ================= TEMPLATE =================
 
 template_path = Path(__file__).parent / "template" / "job.html"
-
-with open(template_path, "r", encoding="utf-8") as f:
-    job_template = Template(f.read())
-
-
-# ================= HELPERS =================
-
-
-def get_my_jobs() -> list[JobModel]:
-    return JobRepository().read_all()
 
 
 def find_job_index(jobs: list[JobModel], job_id: str) -> int:
@@ -44,10 +33,9 @@ def find_job_index(jobs: list[JobModel], job_id: str) -> int:
 
 
 def render_job(job: JobModel) -> str:
+    with open(template_path, "r", encoding="utf-8") as f:
+        job_template = Template(f.read())
     return job_template.render(job=job)
-
-
-# ================= CORE PAGE RENDER =================
 
 
 async def show_job_page(
@@ -64,7 +52,6 @@ async def show_job_page(
         await callback.message.answer(MSG_NOT_FOUND)
         return
 
-    # 🔥 сохраняем текущую работу полностью
     await state.set_state(CurrentJobState.job)
     await state.update_data(job=job)
 
@@ -75,6 +62,7 @@ async def show_job_page(
             index,
             jobs,
             callback_prefix=button.callback_prefix,
+            include_buttons=[button_save_job],
         ),
     )
 
@@ -83,13 +71,22 @@ async def show_job_page(
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
-    jobs = get_my_jobs()
+    user_jobs = UserJobRepository().read_all_by_property(
+        "user_id", message.from_user.id
+    )
+
+    if not user_jobs:
+        await message.answer(MSG_NOT_FOUND)
+        return
+
+    job_ids = [uj.job_id for uj in user_jobs]
+    jobs = [JobRepository().read_one_by_property("job_id", jid) for jid in job_ids]
+    jobs = [job for job in jobs if job]  # filter out missing jobs just in case
 
     if not jobs:
         await message.answer(MSG_NOT_FOUND)
         return
 
-    # сохраняем первую работу
     await state.set_state(CurrentJobState.job)
     await state.update_data(job=jobs[0])
 
@@ -100,6 +97,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
             0,
             jobs,
             callback_prefix=button_my_jobs.callback_prefix,
+            include_buttons=[],
         ),
     )
 
@@ -107,7 +105,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
 async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    jobs = get_my_jobs()
+    jobs = JobRepository().read_all()
 
     if not jobs:
         await callback.message.answer(MSG_NOT_FOUND)
@@ -170,10 +168,8 @@ async def process_location_step(message: Message, state: FSMContext):
         await message.answer(MSG_NOT_FOUND)
         return
 
-    # сохраняем найденные работы
     await state.update_data(found_jobs=jobs)
 
-    # сохраняем первую как текущую
     await state.set_state(CurrentJobState.job)
     await state.update_data(job=jobs[0].model_dump())
 
@@ -184,5 +180,6 @@ async def process_location_step(message: Message, state: FSMContext):
             0,
             jobs,
             callback_prefix=button_browse_jobs.callback_prefix,
+            include_buttons=[button_save_job],
         ),
     )
