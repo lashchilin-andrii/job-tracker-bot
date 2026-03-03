@@ -16,8 +16,9 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
     if not job_data:
         await callback.message.answer("❌ No job in state")
         return
+    print(job_data)
 
-    job = JobModel(**job_data)
+    job = JobModel(**job_data.model_dump())
 
     existing = JobRepository().read_one_by_property("job_id", job.job_id)
     if not existing:
