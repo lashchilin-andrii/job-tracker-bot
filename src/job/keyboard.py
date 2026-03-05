@@ -37,25 +37,32 @@ def get_navigation_keyboard(
 
 
 def get_service_keyboard(
-    include_buttons: list[ButtonBase],
+    include_buttons: list[list[ButtonBase]],
 ) -> list[list[InlineKeyboardButton]]:
 
-    buttons = []
-    for include_button in include_buttons:
-        buttons.append(
-            InlineKeyboardButton(
-                text=include_button.text,
-                callback_data=f"{include_button.callback_prefix}",
+    keyboard: list[list[InlineKeyboardButton]] = []
+
+    for row in include_buttons:
+        keyboard_row: list[InlineKeyboardButton] = []
+
+        for button in row:
+            keyboard_row.append(
+                InlineKeyboardButton(
+                    text=button.text,
+                    callback_data=button.callback_prefix,
+                )
             )
-        )
-    return [buttons]
+
+        keyboard.append(keyboard_row)
+
+    return keyboard
 
 
 def get_menu_keyboard(
     current_index: int,
     jobs: list[JobModel],
     callback_prefix: str,
-    include_buttons: list[ButtonBase],
+    include_buttons: list[list[ButtonBase]],
 ) -> InlineKeyboardMarkup:
 
     keyboard = []
