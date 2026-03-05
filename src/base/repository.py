@@ -13,7 +13,7 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def read_one_by_property(self):
+    def read_by_property(self):
         raise NotImplementedError
 
     @abstractmethod
@@ -43,18 +43,19 @@ class SQLAlchemyRepository(AbstractRepository):
             session.refresh(alchemy_object)
             return alchemy_object
 
-    def read_one_by_property(
+    def read_by_property(
         self,
         property_name: str,
         property_value: Any,
+        read_all: bool = False,
     ):
-        """Read one entry of a specified model by a specified field from db."""
+        """Read one or all entries of a specified model by a specified field from db."""
         with SessionLocal() as session:
             query = select(self.alchemy_model).where(
                 getattr(self.alchemy_model, property_name) == property_value,
             )
-            result = session.execute(query)
-            return result.scalars().first()
+            result = session.execute(query).scalars()
+            return result.all() if read_all else result.first()
 
     def read_all(self):
         """Read all entries of a specified model from db."""
@@ -80,7 +81,7 @@ class SQLAlchemyRepository(AbstractRepository):
     ):
         """Delete one entry of a specified model by a specified field from db."""
         with SessionLocal() as session:
-            entry = self.read_one_by_property(
+            entry = self.read_by_property(
                 property_name=property_name,
                 property_value=property_value,
             )

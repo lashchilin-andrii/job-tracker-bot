@@ -27,7 +27,7 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
 
     job = JobModel(**job_data.model_dump())
 
-    existing = JobRepository().read_one_by_property("job_id", job.job_id)
+    existing = JobRepository().read_by_property("job_id", job.job_id)
     if not existing:
         JobRepository().create_one(job)
 
@@ -43,36 +43,33 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
-    # Get saved jobs for the user
-    user_jobs = UserJobRepository().read_all_by_property(
-        "user_id", message.from_user.id
+    user_jobs = UserJobRepository().read_by_property(
+        "user_id", message.from_user.id, read_all=True
     )
-
     if not user_jobs:
         await message.answer(MSG_NOT_FOUND)
         return
 
-    job_ids = [uj.job_id for uj in user_jobs]
-    jobs = [JobRepository().read_one_by_property("job_id", jid) for jid in job_ids]
-    jobs = [job for job in jobs if job]  # remove missing jobs
+    jobs = [
+        job
+        for uj in user_jobs
+        if (job := JobRepository().read_by_property("job_id", uj.job_id))
+    ]
 
     if not jobs:
         await message.answer(MSG_NOT_FOUND)
         return
 
-    # Save all jobs in FSM state
+    # сохраняем первый job и индекс в FSM
     await state.set_state(CurrentJobState.job)
-    await state.update_data(user_jobs=jobs, current_index=0)
+    await state.update_data(job=jobs[0], user_jobs=jobs)
 
-    # Show first job without any service buttons
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
         reply_markup=get_menu_keyboard(
-            current_index=0,
             jobs=jobs,
             callback_prefix=button_my_jobs.callback_prefix,
-            include_buttons=[],  # No save button
         ),
     )
 
@@ -86,19 +83,19 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(MSG_NOT_FOUND)
         return
 
-    # Extract job index from callback (if using prefix:index style)
+    # получаем текущий индекс из callback или из FSM
     job_id = button_my_jobs.get_data_from_callback_without_prefix(callback.data)
-    index = next((i for i, j in enumerate(jobs) if str(j.job_id) == job_id), 0)
+    index = next((i for i, job in enumerate(jobs) if str(job.job_id) == job_id), 0)
 
-    await state.update_data(current_index=index)
+    # обновляем FSM
+    await state.update_data(job=jobs[index])
 
     await callback.message.edit_text(
         render_job(jobs[index]),
         parse_mode="HTML",
         reply_markup=get_menu_keyboard(
-            current_index=index,
+            current_job_index=index,
             jobs=jobs,
             callback_prefix=button_my_jobs.callback_prefix,
-            include_buttons=[],  # No Save button
         ),
     )

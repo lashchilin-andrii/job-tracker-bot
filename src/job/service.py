@@ -57,10 +57,10 @@ async def show_job_page(
         render_job(job),
         parse_mode="HTML",
         reply_markup=get_menu_keyboard(
-            index,
-            jobs,
+            jobs=jobs,
             callback_prefix=button.callback_prefix,
             include_buttons=[[button_save_job]],
+            current_job_index=index,
         ),
     )
 
@@ -120,8 +120,7 @@ async def process_location_step(message: Message, state: FSMContext):
         render_job(jobs[0]),
         parse_mode="HTML",
         reply_markup=get_menu_keyboard(
-            0,
-            jobs,
+            jobs=jobs,
             callback_prefix=button_browse_jobs.callback_prefix,
             include_buttons=[[button_save_job]],
         ),

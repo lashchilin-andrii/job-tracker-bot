@@ -11,7 +11,7 @@ def get_or_create_user(user_raw) -> UserModel:
     """
     user_id = str(user_raw.id)
 
-    db_user = UserRepository().read_one_by_property("user_id", user_id)
+    db_user = UserRepository().read_by_property("user_id", user_id)
     if db_user:
         return db_user
 
