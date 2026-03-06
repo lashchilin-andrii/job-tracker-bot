@@ -18,11 +18,6 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 
-# -----------------------
-# Synchronous tests
-# -----------------------
-
-
 def test_get_job_id_from_callback_valid():
     data = "job_12345"
     result = get_job_id_from_callback(data)
@@ -67,9 +62,6 @@ def test_find_job_index():
         find_job_index(jobs, "3")
 
 
-# -----------------------
-# Asynchronous tests
-# -----------------------
 @pytest.mark.asyncio
 async def test_show_my_jobs(monkeypatch):
     fake_message = MagicMock(spec=Message)
@@ -103,15 +95,13 @@ async def test_handle_my_job_callback(monkeypatch):
 @pytest.mark.asyncio
 async def test_handle_found_job_callback(monkeypatch):
 
-    # Мок для message
     fake_message = MagicMock()
     fake_message.answer = AsyncMock()
     fake_message.edit_text = AsyncMock()
 
-    # Мок для callback
     fake_callback = MagicMock()
     fake_callback.data = "job_1"
-    fake_callback.message = fake_message  # важно!
+    fake_callback.message = fake_message
     fake_callback.answer = AsyncMock()
 
     fake_jobs = [JobModel(job_id="1", job_name="Backend")]
@@ -153,7 +143,6 @@ async def test_process_location_step(monkeypatch):
 
     fake_message.text = "Remote"
 
-    # мок для get_jobs
     monkeypatch.setattr(
         "src.job.service.get_jobs",
         lambda keywords, location: [JobModel(job_id="1", job_name="Backend")],

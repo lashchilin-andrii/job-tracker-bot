@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from src.base.button import ButtonBase
 from src.job.model import JobModel
-from src.job.keyboard import get_menu_keyboard
+from src.job.keyboard import get_job_menu_keyboard
 from src.job.message import (
     MSG_NOT_FOUND,
     MSG_SESSION_EXPIRED,
@@ -56,11 +56,11 @@ async def show_job_page(
     await callback.message.edit_text(
         render_job(job),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(
+        reply_markup=get_job_menu_keyboard(
             jobs=jobs,
             callback_prefix=button.callback_prefix,
             include_buttons=[[button_save_job]],
-            current_job_index=index,
+            current_index=index,
         ),
     )
 
@@ -81,9 +81,6 @@ async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext
         jobs,
         button_browse_jobs,
     )
-
-
-# ================= SEARCH FLOW =================
 
 
 async def start_job_search(message: Message, state: FSMContext):
@@ -119,7 +116,7 @@ async def process_location_step(message: Message, state: FSMContext):
     await message.answer(
         render_job(jobs[0]),
         parse_mode="HTML",
-        reply_markup=get_menu_keyboard(
+        reply_markup=get_job_menu_keyboard(
             jobs=jobs,
             callback_prefix=button_browse_jobs.callback_prefix,
             include_buttons=[[button_save_job]],
