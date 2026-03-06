@@ -12,8 +12,8 @@ def get_job_navigation_keyboard(
 ) -> list[list[InlineKeyboardButton]]:
     """One line of buttons prev / page / next"""
     total = len(jobs)
-    prev_index = max(0, current_index - 1)
-    next_index = min(total - 1, current_index + 1)
+    prev_index = (current_index - 1) % total
+    next_index = (current_index + 1) % total
 
     return [
         [

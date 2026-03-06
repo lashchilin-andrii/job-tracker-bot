@@ -10,9 +10,8 @@ from src.user_job.model import UserJobModel
 from src.user_job.repository import UserJobRepository
 from src.button import button_my_jobs
 from src.job.state import CurrentJobState
-from src.job.message import (
-    MSG_NOT_FOUND,
-)
+from src.job.message import MSG_NOT_FOUND
+from src.base.enum import UserJobStatus
 
 
 async def save_job(callback: CallbackQuery, state: FSMContext):
@@ -32,9 +31,9 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
         JobRepository().create_one(job)
 
     user_job = UserJobModel(
-        user_id=callback.from_user.id,
-        job_id=job.job_id,
-        user_job_status="Applied",
+        user_id=str(callback.from_user.id),
+        job_id=str(job.job_id),
+        user_job_status=UserJobStatus.applied.value,
     )
 
     UserJobRepository().create_one(user_job)
@@ -44,7 +43,7 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
 
 async def show_my_jobs(message: Message, state: FSMContext):
     user_jobs = UserJobRepository().read_by_property(
-        "user_id", message.from_user.id, read_all=True
+        "user_id", str(message.from_user.id), read_all=True
     )
 
     if not user_jobs:
@@ -79,6 +78,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
             jobs=jobs,
             current_job_id=str(jobs[0].job_id),
             callback_prefix=button_my_jobs.callback_prefix,
+            user_job=user_jobs[0],  # передаём объект UserJob из БД
         ),
     )
 
@@ -114,5 +114,49 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
             jobs=jobs,
             current_job_id=str(job.job_id),
             callback_prefix=button_my_jobs.callback_prefix,
+            user_job=user_job,  # передаём объект UserJob из БД
+        ),
+    )
+
+
+async def change_job_status(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+
+    data = await state.get_data()
+    job: JobModel = data.get("job")
+    user_jobs: list[UserJobModel] = data.get("user_jobs")
+    jobs: list[JobModel] = data.get("jobs")
+
+    if not job or not jobs or not user_jobs:
+        await callback.message.answer("❌ No job selected")
+        return
+
+    index = next((i for i, j in enumerate(jobs) if j.job_id == job.job_id), 0)
+    user_job = user_jobs[index]
+
+    # Получаем список статусов из Enum
+    statuses = list(UserJobStatus)
+    current_idx = next(
+        (i for i, s in enumerate(statuses) if s.value == user_job.user_job_status), 0
+    )
+    new_status = statuses[(current_idx + 1) % len(statuses)].value
+
+    user_job.user_job_status = new_status
+    UserJobRepository().update_one(user_job)
+
+    await state.update_data(job=job, user_jobs=user_jobs)
+
+    await callback.message.edit_text(
+        render_template(
+            template_path=Path(__file__).parent / "template" / "user_job.html",
+            job=job,
+            user_job=user_job,
+        ),
+        parse_mode="HTML",
+        reply_markup=get_user_job_menu_keyboard(
+            jobs=jobs,
+            current_job_id=str(job.job_id),
+            callback_prefix=button_my_jobs.callback_prefix,
+            user_job=user_job,  # передаём объект UserJob для корректного текста кнопки
         ),
     )

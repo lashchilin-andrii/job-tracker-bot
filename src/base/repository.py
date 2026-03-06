@@ -66,13 +66,13 @@ class SQLAlchemyRepository(AbstractRepository):
 
     def delete_one(
         self,
-        alchemy_object_to_delete: BaseAlchemyModel,
+        alchemy_object: BaseAlchemyModel,
     ):
         """Delete one entry of a given specified model."""
         with SessionLocal() as session:
-            session.delete(alchemy_object_to_delete)
+            session.delete(alchemy_object)
             session.commit()
-            return alchemy_object_to_delete
+            return alchemy_object
 
     def delete_one_by_property(
         self,
