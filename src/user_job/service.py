@@ -24,7 +24,12 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("❌ No job in state")
         return
 
-    job = JobModel(**job_data.model_dump())
+    if isinstance(job_data, dict):
+        job_dict = job_data
+    else:
+        job_dict = job_data.model_dump()
+
+    job = JobModel(**job_dict)
 
     existing = JobRepository().read_by_property("job_id", job.job_id)
     if not existing:
@@ -158,5 +163,55 @@ async def change_job_status(callback: CallbackQuery, state: FSMContext):
             current_job_id=str(job.job_id),
             callback_prefix=button_my_jobs.callback_prefix,
             user_job=user_job,  # передаём объект UserJob для корректного текста кнопки
+        ),
+    )
+
+
+async def delete_job(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+
+    data = await state.get_data()
+    job: JobModel = data.get("job")
+    user_jobs: list[UserJobModel] = data.get("user_jobs")
+    jobs: list[JobModel] = data.get("jobs")
+
+    if not job or not jobs or not user_jobs:
+        await callback.message.answer("❌ No job selected")
+        return
+
+    index = next((i for i, j in enumerate(jobs) if j.job_id == job.job_id), 0)
+    user_job = user_jobs[index]
+
+    # Удаляем запись из базы
+    UserJobRepository().delete_one(user_job)
+
+    # Обновляем списки после удаления
+    del user_jobs[index]
+    del jobs[index]
+
+    if not jobs:
+        await state.clear()
+        return
+
+    # Берём новую текущую работу (если удалили последнюю, выбираем предыдущую)
+    new_index = min(index, len(jobs) - 1)
+    new_job = jobs[new_index]
+    new_user_job = user_jobs[new_index]
+
+    await state.update_data(job=new_job, jobs=jobs, user_jobs=user_jobs)
+
+    # Обновляем сообщение с новым меню
+    await callback.message.edit_text(
+        render_template(
+            template_path=Path(__file__).parent / "template" / "user_job.html",
+            job=new_job,
+            user_job=new_user_job,
+        ),
+        parse_mode="HTML",
+        reply_markup=get_user_job_menu_keyboard(
+            jobs=jobs,
+            current_job_id=str(new_job.job_id),
+            callback_prefix=button_my_jobs.callback_prefix,
+            user_job=new_user_job,
         ),
     )

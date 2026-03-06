@@ -1,7 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from src.job.model import JobModel
 from src.user_job.model import UserJobModel
-from src.button import button_previous, button_next, button_change_job_status
+from src.button import (
+    button_previous,
+    button_next,
+    button_change_job_status,
+    button_delete_job,
+)
 
 
 def get_user_job_menu_keyboard(
@@ -39,6 +44,11 @@ def get_user_job_menu_keyboard(
         text=button_change_job_status.set_text(user_job.user_job_status),
         callback_data=button_change_job_status.callback_prefix,
     )
+    delete_button = InlineKeyboardButton(
+        text=button_delete_job.text,
+        callback_data=button_delete_job.callback_prefix,
+    )
     keyboard.append([status_button])
+    keyboard.append([delete_button])
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
