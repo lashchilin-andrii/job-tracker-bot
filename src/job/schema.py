@@ -36,13 +36,18 @@ class Job(BaseModel):
             return v
 
         v = html.unescape(v)
-        v = v.replace("\xa0", " ").replace("\u200b", "")
-        v = v.replace("...", " ")
-        v = re.sub(r"<.*?>", "", v)
-        v = re.sub(r"[ \t]+", " ", v)
-        v = re.sub(r"(\r?\n\s*)+", "\n", v)
 
-        return v.strip() + "..."
+        v = re.sub(r"<.*?>", "", v)
+        v = re.sub(r"&##(\d+);", r"&#\1;", v)
+        v = v.replace("\xa0", " ").replace("\u200b", "")
+        v = re.sub(r"\s+", " ", v)
+
+        v = v.strip()
+
+        if not v:
+            return None
+
+        return v[:300] + "..."
 
     @field_validator("job_updated", mode="before")
     @classmethod
@@ -50,16 +55,10 @@ class Job(BaseModel):
         if not v:
             return v
 
-        if "." in v:
-            base, micro = v.split(".")
-            micro = micro[:6]
-            v = f"{base}.{micro}"
+        v = re.sub(r"\.(\d{6})\d*", r".\1", v)
 
-        for fmt in ("%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
-            try:
-                dt = datetime.strptime(v, fmt)
-                return dt.strftime("%d %b %Y")
-            except ValueError:
-                continue
-
-        return v
+        try:
+            dt = datetime.fromisoformat(v)
+            return dt.strftime("%d %b %Y")
+        except ValueError:
+            return v

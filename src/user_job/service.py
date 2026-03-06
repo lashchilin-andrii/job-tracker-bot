@@ -1,7 +1,8 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from pathlib import Path
-from jinja2 import Template
+
+from src.base.service import render_template
 from src.job.model import JobModel
 from src.user_job.keyboard import get_user_job_menu_keyboard
 from src.job.repository import JobRepository
@@ -13,14 +14,6 @@ from src.job.message import (
     MSG_NOT_FOUND,
 )
 
-template_path = Path(__file__).parent / "template" / "user_job.html"
-
-
-def render_user_job(job: JobModel, user_job: UserJobModel) -> str:
-    with open(template_path, "r", encoding="utf-8") as f:
-        job_template = Template(f.read())
-    return job_template.render(job=job, user_job=user_job)
-
 
 async def save_job(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -31,7 +24,6 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
     if not job_data:
         await callback.message.answer("❌ No job in state")
         return
-    print(job_data)
 
     job = JobModel(**job_data.model_dump())
 
@@ -77,7 +69,11 @@ async def show_my_jobs(message: Message, state: FSMContext):
     )
 
     await message.answer(
-        render_user_job(jobs[0], user_jobs[0]),
+        render_template(
+            template_path=Path(__file__).parent / "template" / "user_job.html",
+            job=jobs[0],
+            user_job=user_jobs[0],
+        ),
         parse_mode="HTML",
         reply_markup=get_user_job_menu_keyboard(
             jobs=jobs,
@@ -91,8 +87,8 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
     data = await state.get_data()
-    jobs = data.get("jobs")
-    user_jobs = data.get("user_jobs")
+    jobs: list[JobModel] = data.get("jobs")
+    user_jobs: list[UserJobModel] = data.get("user_jobs")
 
     if not jobs:
         await callback.message.answer(MSG_NOT_FOUND)
@@ -108,7 +104,11 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await state.update_data(job=job)
 
     await callback.message.edit_text(
-        render_user_job(job, user_job),
+        render_template(
+            template_path=Path(__file__).parent / "template" / "user_job.html",
+            job=job,
+            user_job=user_job,
+        ),
         parse_mode="HTML",
         reply_markup=get_user_job_menu_keyboard(
             jobs=jobs,
