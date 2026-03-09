@@ -8,17 +8,17 @@ from src.user.repository import UserRepository
 from src.user_job.service import get_jobs_stats_by_user_id
 
 
-def create_user(message: Message):
-    if UserRepository().read_by_property("user_id", str(message.from_user.id)):
+def create_user(user: User):
+    if UserRepository().read_by_property("user_id", user.user_id):
         return
 
     return UserRepository().create_one(
         UserModel(
-            user_id=str(message.from_user.id),
-            user_name=message.from_user.username,
-            user_first_name=message.from_user.first_name,
-            user_last_name=message.from_user.last_name,
-            user_language=message.from_user.language_code or "en",
+            user_id=user.user_id,
+            user_name=user.user_name,
+            user_first_name=user.user_first_name,
+            user_last_name=user.user_last_name,
+            user_language=user.user_language,
         )
     )
 
