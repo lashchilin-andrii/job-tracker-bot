@@ -1,5 +1,6 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from collections import Counter
 from pathlib import Path
 
 from src.base.service import render_template
@@ -210,3 +211,17 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
             user_job=new_user_job,
         ),
     )
+
+
+def get_user_jobs_stats_by_user_id(user_id: str) -> dict:
+    user_jobs = (
+        UserJobRepository().read_by_property("user_id", user_id, read_all=True) or []
+    )
+
+    counter = Counter(uj.user_job_status for uj in user_jobs)
+
+    stats = {status.value: counter.get(status.value, 0) for status in UserJobStatus}
+
+    stats["total"] = len(user_jobs)
+
+    return stats

@@ -1,10 +1,11 @@
 from pathlib import Path
-from jinja2 import Template
 from aiogram.types import Message
 
+from src.base.service import render_template
 from src.user.schema import User
 from src.user.model import UserModel
 from src.user.repository import UserRepository
+from src.user_job.service import get_user_jobs_stats_by_user_id
 
 
 def get_or_create_user(user_raw) -> UserModel:
@@ -25,20 +26,6 @@ def get_or_create_user(user_raw) -> UserModel:
     )
 
 
-def render_profile(user: User) -> str:
-    template_path = Path(__file__).parent / "template" / "profile.html"
-
-    with open(template_path, "r", encoding="utf-8") as f:
-        template = Template(f.read())
-
-    return template.render(
-        username=user.user_name or "NoUsername",
-        first_name=user.user_first_name or "",
-        last_name=user.user_last_name or "",
-        language=user.user_language or "en",
-    ).strip()
-
-
 async def show_profile(message: Message):
     user_raw = message.from_user
 
@@ -52,4 +39,15 @@ async def show_profile(message: Message):
         user_language=db_user.user_language,
     )
 
-    await message.answer(render_profile(user))
+    stats = get_user_jobs_stats_by_user_id(str(user_raw.id))
+
+    await message.answer(
+        render_template(
+            template_path=Path(__file__).parent / "template" / "profile.html",
+            username=user.user_name or "NoUsername",
+            first_name=user.user_first_name or "",
+            last_name=user.user_last_name or "",
+            language=user.user_language or "en",
+            stats=stats,
+        )
+    )
