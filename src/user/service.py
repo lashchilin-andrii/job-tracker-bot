@@ -1,3 +1,5 @@
+"""Service layer should not now about Telegram."""
+
 from src.user.schema import User
 from src.user.model import UserModel
 from src.user.repository import UserRepository
@@ -6,7 +8,7 @@ from src.user.repository import UserRepository
 def create_user(user: User) -> UserModel | None:
     """Create a user in db from User model if not exists."""
 
-    if UserRepository().read_by_property("user_id", user.user_id):
+    if UserRepository().read_one_by_property("user_id", user.user_id):
         return
 
     return UserRepository().create_one(
@@ -22,4 +24,4 @@ def create_user(user: User) -> UserModel | None:
 
 def get_user_by_id(user_id: str) -> UserModel | None:
     """Get user entry from db by id or None."""
-    return UserRepository().read_by_property("user_id", user_id)
+    return UserRepository().read_one_by_property("user_id", user_id)

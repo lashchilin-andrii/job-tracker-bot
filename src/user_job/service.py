@@ -32,7 +32,7 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
 
     job = JobModel(**job_dict)
 
-    existing = JobRepository().read_by_property("job_id", job.job_id)
+    existing = JobRepository().read_one_by_property("job_id", job.job_id)
     if not existing:
         JobRepository().create_one(job)
 
@@ -48,8 +48,8 @@ async def save_job(callback: CallbackQuery, state: FSMContext):
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
-    user_jobs = UserJobRepository().read_by_property(
-        "user_id", str(message.from_user.id), read_all=True
+    user_jobs = UserJobRepository().read_all_by_property(
+        "user_id", str(message.from_user.id)
     )
 
     if not user_jobs:
@@ -59,7 +59,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
     jobs = [
         job
         for uj in user_jobs
-        if (job := JobRepository().read_by_property("job_id", uj.job_id))
+        if (job := JobRepository().read_one_by_property("job_id", uj.job_id))
     ]
 
     if not jobs:
@@ -214,9 +214,7 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
 
 
 def get_jobs_stats_by_user_id(user_id: str) -> dict:
-    user_jobs = (
-        UserJobRepository().read_by_property("user_id", user_id, read_all=True) or []
-    )
+    user_jobs = UserJobRepository().read_all_by_property("user_id", user_id) or []
 
     counter = Counter(uj.user_job_status for uj in user_jobs)
 
