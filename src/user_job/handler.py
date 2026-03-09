@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 
-from src.exceptions import Exists
+from src.exceptions import Present
 from src.message import MSG_SAVED_SUCCESSFULLY, MSG_OBJECT_EXISTS
 from src.job.model import JobModel
 from src.job.service import save_job
@@ -35,7 +35,7 @@ async def save_my_job_handler(callback: CallbackQuery, state: FSMContext):
         await save_my_job(
             user_job=UserJob(user_id=str(callback.from_user.id), job_id=job.job_id)
         )
-    except Exists:
+    except Present:
         await callback.answer(MSG_OBJECT_EXISTS, show_alert=True)
     await callback.answer(MSG_SAVED_SUCCESSFULLY, show_alert=True)
 

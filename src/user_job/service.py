@@ -3,7 +3,8 @@ from aiogram.fsm.context import FSMContext
 from collections import Counter
 from pathlib import Path
 
-from src.exceptions import Exists
+from src.job.schema import Job
+from src.exceptions import Absent, Present
 from src.base.service import render_template
 from src.job.model import JobModel
 from src.user_job.keyboard import get_user_job_menu_keyboard
@@ -29,17 +30,18 @@ async def save_my_job(user_job: UserJob) -> UserJobModel:
             )
         )
     except IntegrityError:
-        raise Exists
+        raise Present
+
+
+def get_all_user_jobs_by_user_id(user_id: int | str):
+    return UserJobRepository().read_all_by_property("user_id", str(user_id))
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
-    user_jobs = UserJobRepository().read_all_by_property(
-        "user_id", str(message.from_user.id)
-    )
+    user_jobs = get_all_user_jobs_by_user_id(message.from_user.id)
 
     if not user_jobs:
-        await message.answer(MSG_NOT_FOUND)
-        return
+        raise Absent
 
     jobs = [
         job
@@ -48,8 +50,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
     ]
 
     if not jobs:
-        await message.answer(MSG_NOT_FOUND)
-        return
+        raise Absent
 
     await state.set_state(CurrentJobState.job)
     await state.update_data(
@@ -156,7 +157,7 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
     data = await state.get_data()
-    job: JobModel = data.get("job")
+    job: Job = await CurrentJobState.get_job_data(state)
     user_jobs: list[UserJobModel] = data.get("user_jobs")
     jobs: list[JobModel] = data.get("jobs")
 

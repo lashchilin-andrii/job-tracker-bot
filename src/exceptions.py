@@ -2,5 +2,9 @@ class InvalidCallbackData(Exception):
     pass
 
 
-class Exists(Exception):
+class Present(Exception):
+    pass
+
+
+class Absent(Exception):
     pass
