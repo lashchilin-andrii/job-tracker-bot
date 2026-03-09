@@ -83,7 +83,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
             jobs=jobs,
             current_job_id=str(jobs[0].job_id),
             callback_prefix=button_my_jobs.callback_prefix,
-            user_job=user_jobs[0],  # передаём объект UserJob из БД
+            user_job=user_jobs[0],
         ),
     )
 
@@ -139,7 +139,6 @@ async def change_job_status(callback: CallbackQuery, state: FSMContext):
     index = next((i for i, j in enumerate(jobs) if j.job_id == job.job_id), 0)
     user_job = user_jobs[index]
 
-    # Получаем список статусов из Enum
     statuses = list(UserJobStatus)
     current_idx = next(
         (i for i, s in enumerate(statuses) if s.value == user_job.user_job_status), 0
@@ -182,10 +181,8 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
     index = next((i for i, j in enumerate(jobs) if j.job_id == job.job_id), 0)
     user_job = user_jobs[index]
 
-    # Удаляем запись из базы
     UserJobRepository().delete_one(user_job)
 
-    # Обновляем списки после удаления
     del user_jobs[index]
     del jobs[index]
 
@@ -193,14 +190,12 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
         await state.clear()
         return
 
-    # Берём новую текущую работу (если удалили последнюю, выбираем предыдущую)
     new_index = min(index, len(jobs) - 1)
     new_job = jobs[new_index]
     new_user_job = user_jobs[new_index]
 
     await state.update_data(job=new_job, jobs=jobs, user_jobs=user_jobs)
 
-    # Обновляем сообщение с новым меню
     await callback.message.edit_text(
         render_template(
             template_path=Path(__file__).parent / "template" / "user_job.html",

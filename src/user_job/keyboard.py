@@ -13,7 +13,7 @@ def get_user_job_menu_keyboard(
     jobs: list[JobModel],
     current_job_id: str,
     callback_prefix: str,
-    user_job: UserJobModel,  # объект UserJob из БД
+    user_job: UserJobModel,
 ) -> InlineKeyboardMarkup:
     current_index = next(
         (i for i, job in enumerate(jobs) if str(job.job_id) == current_job_id), 0
