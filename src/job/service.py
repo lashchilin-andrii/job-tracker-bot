@@ -5,6 +5,8 @@ from jinja2 import Template
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src.job.repository import JobRepository
+from src.job.schema import Job
 from src.base.button import ButtonBase
 from src.job.model import JobModel
 from src.job.keyboard import get_job_menu_keyboard
@@ -111,7 +113,7 @@ async def process_location_step(message: Message, state: FSMContext):
     await state.update_data(found_jobs=jobs)
 
     await state.set_state(CurrentJobState.job)
-    await state.update_data(job=jobs[0].model_dump())
+    await state.update_data(job=jobs[0])
 
     await message.answer(
         render_job(jobs[0]),
@@ -122,3 +124,16 @@ async def process_location_step(message: Message, state: FSMContext):
             include_buttons=[[button_save_job]],
         ),
     )
+
+
+async def save_job(job: Job | None) -> JobModel:
+    if not job:
+        raise Exception("No job in save_job")
+
+    job_model = JobModel(**job.model_dump())
+
+    existing = JobRepository().read_one_by_property("job_id", job_model.job_id)
+    if existing:
+        return existing
+
+    return JobRepository().create_one(job_model)

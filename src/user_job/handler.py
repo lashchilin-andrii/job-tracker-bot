@@ -2,13 +2,17 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 
+from src.message import MSG_SAVED_SUCCESSFULLY
+from src.job.model import JobModel
+from src.job.service import save_job
+from src.job.state import CurrentJobState
 from src.button import (
     button_save_job,
     button_my_jobs,
     button_change_job_status,
     button_delete_job,
 )
-from src.user_job.service import save_job
+from src.user_job.service import save_my_job
 
 from src.user_job.service import (
     show_my_jobs,
@@ -16,13 +20,21 @@ from src.user_job.service import (
     change_job_status,
     delete_job,
 )
+from src.user_job.schema import UserJob
+
 
 router = Router()
 
 
 @router.callback_query(F.data.startswith(button_save_job.callback_prefix))
-async def save_job_handler(callback: CallbackQuery, state: FSMContext):
-    await save_job(callback, state)
+async def save_my_job_handler(callback: CallbackQuery, state: FSMContext):
+
+    job: JobModel = await save_job(await CurrentJobState.get_job_data(state))
+
+    await save_my_job(
+        user_job=UserJob(user_id=str(callback.from_user.id), job_id=job.job_id)
+    )
+    await callback.answer(MSG_SAVED_SUCCESSFULLY, show_alert=True)
 
 
 @router.message(F.text == button_my_jobs.text)

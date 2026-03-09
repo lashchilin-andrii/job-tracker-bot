@@ -7,6 +7,7 @@ from src.base.service import render_template
 from src.job.model import JobModel
 from src.user_job.keyboard import get_user_job_menu_keyboard
 from src.job.repository import JobRepository
+from src.user_job.schema import UserJob
 from src.user_job.model import UserJobModel
 from src.user_job.repository import UserJobRepository
 from src.button import button_my_jobs
@@ -15,36 +16,14 @@ from src.message import MSG_NOT_FOUND
 from src.base.enum import UserJobStatus
 
 
-async def save_job(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
-    data = await state.get_data()
-    job_data = data.get("job")
-
-    if not job_data:
-        await callback.message.answer("❌ No job in state")
-        return
-
-    if isinstance(job_data, dict):
-        job_dict = job_data
-    else:
-        job_dict = job_data.model_dump()
-
-    job = JobModel(**job_dict)
-
-    existing = JobRepository().read_one_by_property("job_id", job.job_id)
-    if not existing:
-        JobRepository().create_one(job)
-
-    user_job = UserJobModel(
-        user_id=str(callback.from_user.id),
-        job_id=str(job.job_id),
-        user_job_status=UserJobStatus.applied.value,
+async def save_my_job(user_job: UserJob):
+    return UserJobRepository().create_one(
+        UserJobModel(
+            user_id=user_job.user_id,
+            job_id=user_job.job_id,
+            user_job_status=UserJobStatus.applied.value,
+        )
     )
-
-    UserJobRepository().create_one(user_job)
-
-    await callback.message.answer("✅ Job saved successfully")
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
