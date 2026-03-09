@@ -2,7 +2,8 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 
-from src.message import MSG_SAVED_SUCCESSFULLY
+from src.exceptions import Exists
+from src.message import MSG_SAVED_SUCCESSFULLY, MSG_OBJECT_EXISTS
 from src.job.model import JobModel
 from src.job.service import save_job
 from src.job.state import CurrentJobState
@@ -28,12 +29,14 @@ router = Router()
 
 @router.callback_query(F.data.startswith(button_save_job.callback_prefix))
 async def save_my_job_handler(callback: CallbackQuery, state: FSMContext):
-
+    """Save my job if not saved."""
     job: JobModel = await save_job(await CurrentJobState.get_job_data(state))
-
-    await save_my_job(
-        user_job=UserJob(user_id=str(callback.from_user.id), job_id=job.job_id)
-    )
+    try:
+        await save_my_job(
+            user_job=UserJob(user_id=str(callback.from_user.id), job_id=job.job_id)
+        )
+    except Exists:
+        await callback.answer(MSG_OBJECT_EXISTS, show_alert=True)
     await callback.answer(MSG_SAVED_SUCCESSFULLY, show_alert=True)
 
 

@@ -4,6 +4,7 @@ from jinja2 import Template
 
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.exc import IntegrityError
 
 from src.job.repository import JobRepository
 from src.job.schema import Job
@@ -127,13 +128,13 @@ async def process_location_step(message: Message, state: FSMContext):
 
 
 async def save_job(job: Job | None) -> JobModel:
+    """Save job if not exists."""
     if not job:
         raise Exception("No job in save_job")
 
     job_model = JobModel(**job.model_dump())
 
-    existing = JobRepository().read_one_by_property("job_id", job_model.job_id)
-    if existing:
-        return existing
-
-    return JobRepository().create_one(job_model)
+    try:
+        return JobRepository().create_one(job_model)
+    except IntegrityError:
+        return JobRepository().read_one_by_property("job_id", job_model.job_id)

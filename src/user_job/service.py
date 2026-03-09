@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from collections import Counter
 from pathlib import Path
 
+from src.exceptions import Exists
 from src.base.service import render_template
 from src.job.model import JobModel
 from src.user_job.keyboard import get_user_job_menu_keyboard
@@ -14,16 +15,21 @@ from src.button import button_my_jobs
 from src.job.state import CurrentJobState
 from src.message import MSG_NOT_FOUND
 from src.base.enum import UserJobStatus
+from sqlalchemy.exc import IntegrityError
 
 
-async def save_my_job(user_job: UserJob):
-    return UserJobRepository().create_one(
-        UserJobModel(
-            user_id=user_job.user_id,
-            job_id=user_job.job_id,
-            user_job_status=UserJobStatus.applied.value,
+async def save_my_job(user_job: UserJob) -> UserJobModel:
+    """Save user_job or raise exception."""
+    try:
+        return UserJobRepository().create_one(
+            UserJobModel(
+                user_id=user_job.user_id,
+                job_id=user_job.job_id,
+                user_job_status=UserJobStatus.applied.value,
+            )
         )
-    )
+    except IntegrityError:
+        raise Exists
 
 
 async def show_my_jobs(message: Message, state: FSMContext):
