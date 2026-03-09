@@ -148,7 +148,7 @@ async def change_job_status(callback: CallbackQuery, state: FSMContext):
             jobs=jobs,
             current_job_id=str(job.job_id),
             callback_prefix=button_my_jobs.callback_prefix,
-            user_job=user_job,  # передаём объект UserJob для корректного текста кнопки
+            user_job=user_job,
         ),
     )
 

@@ -1,11 +1,11 @@
 import asyncio
 from pathlib import Path
-from jinja2 import Template
 
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.exc import IntegrityError
 
+from src.base.service import render_template
 from src.job.repository import JobRepository
 from src.job.schema import Job
 from src.base.button import ButtonBase
@@ -17,13 +17,10 @@ from src.message import (
     MSG_ENTER_KEYWORDS,
     MSG_ENTER_LOCATION,
 )
-from src.exceptions import InvalidCallbackData
+from src.exceptions import Absent, InvalidCallbackData
 from src.api.jooble import get_jobs
 from src.job.state import CurrentJobState, JobSearchParametersState
 from src.button import button_browse_jobs, button_save_job
-
-
-template_path = Path(__file__).parent / "template" / "job.html"
 
 
 def find_job_index(jobs: list[JobModel], job_id: str) -> int:
@@ -31,12 +28,6 @@ def find_job_index(jobs: list[JobModel], job_id: str) -> int:
         if str(job.job_id) == job_id:
             return i
     raise InvalidCallbackData(MSG_NOT_FOUND)
-
-
-def render_job(job: JobModel) -> str:
-    with open(template_path, "r", encoding="utf-8") as f:
-        job_template = Template(f.read())
-    return job_template.render(job=job)
 
 
 async def show_job_page(
@@ -57,7 +48,9 @@ async def show_job_page(
     await state.update_data(job=job)
 
     await callback.message.edit_text(
-        render_job(job),
+        render_template(
+            template_path=Path(__file__).parent / "template" / "job.html", job=job
+        ),
         parse_mode="HTML",
         reply_markup=get_job_menu_keyboard(
             jobs=jobs,
@@ -98,9 +91,7 @@ async def process_keywords_step(message: Message, state: FSMContext):
 
 
 async def process_location_step(message: Message, state: FSMContext):
-    data = await state.get_data()
-
-    keywords = data.get("keywords")
+    keywords = await JobSearchParametersState.get_keywords(state)
     location = message.text
 
     await message.answer(f"Keywords: {keywords}\nLocation: {location}")
@@ -108,8 +99,7 @@ async def process_location_step(message: Message, state: FSMContext):
     jobs = await asyncio.to_thread(get_jobs, keywords, location)
 
     if not jobs:
-        await message.answer(MSG_NOT_FOUND)
-        return
+        raise Absent("No jobs.")
 
     await state.update_data(found_jobs=jobs)
 
@@ -117,7 +107,9 @@ async def process_location_step(message: Message, state: FSMContext):
     await state.update_data(job=jobs[0])
 
     await message.answer(
-        render_job(jobs[0]),
+        render_template(
+            template_path=Path(__file__).parent / "template" / "job.html", job=jobs[0]
+        ),
         parse_mode="HTML",
         reply_markup=get_job_menu_keyboard(
             jobs=jobs,
@@ -130,7 +122,7 @@ async def process_location_step(message: Message, state: FSMContext):
 async def save_job(job: Job | None) -> JobModel:
     """Save job if not exists."""
     if not job:
-        raise Exception("No job in save_job")
+        raise Absent("No job in save_job")
 
     job_model = JobModel(**job.model_dump())
 
