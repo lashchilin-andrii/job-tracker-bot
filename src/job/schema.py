@@ -47,7 +47,7 @@ class Job(BaseModel):
         if not v:
             return None
 
-        return v[:300] + "..."
+        return v[:300]
 
     @field_validator("job_updated", mode="before")
     @classmethod

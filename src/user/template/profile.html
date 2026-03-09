@@ -1,12 +1,9 @@
 @{{ username }}
-
-🧑 Name: {{ first_name }}{% if last_name %} {{ last_name }}{% endif %}
-🌐 Language: {{ language }}
+<pre>🧑 Name:     {{ first_name }}{% if last_name %} {{ last_name }}{% endif %}
+🌐 Language: {{ language }}</pre>
 
 📊 Job Stats
-
-💼 Saved jobs: {{ stats.total }}
-
-🟢 Applied: {{ stats.Applied }}
+<pre>🟢 Applied:  {{ stats.Applied }}
 🟡 Accepted: {{ stats.Accepted }}
-🔴 Rejected: {{ stats.Rejected }}
+🔴 Rejected: {{ stats.Rejected }}</pre>
+<pre>💼 Together: {{ stats.total }}</pre>

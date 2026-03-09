@@ -5,19 +5,18 @@ from src.base.service import render_template
 from src.user.schema import User
 from src.user.model import UserModel
 from src.user.repository import UserRepository
-from src.user_job.service import get_user_jobs_stats_by_user_id
+from src.user_job.service import get_jobs_stats_by_user_id
 
 
 def get_or_create_user(user_raw) -> UserModel:
-    user_id = str(user_raw.id)
+    db_user = UserRepository().read_by_property("user_id", str(user_raw.id))
 
-    db_user = UserRepository().read_by_property("user_id", user_id)
     if db_user:
         return db_user
 
     return UserRepository().create_one(
         UserModel(
-            user_id=user_id,
+            user_id=str(user_raw.id),
             user_name=user_raw.username,
             user_first_name=user_raw.first_name,
             user_last_name=user_raw.last_name,
@@ -39,7 +38,7 @@ async def show_profile(message: Message):
         user_language=db_user.user_language,
     )
 
-    stats = get_user_jobs_stats_by_user_id(str(user_raw.id))
+    stats = get_jobs_stats_by_user_id(str(user_raw.id))
 
     await message.answer(
         render_template(
@@ -49,5 +48,6 @@ async def show_profile(message: Message):
             last_name=user.user_last_name or "",
             language=user.user_language or "en",
             stats=stats,
-        )
+        ),
+        parse_mode="HTML",
     )

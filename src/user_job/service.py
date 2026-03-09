@@ -213,7 +213,7 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
     )
 
 
-def get_user_jobs_stats_by_user_id(user_id: str) -> dict:
+def get_jobs_stats_by_user_id(user_id: str) -> dict:
     user_jobs = (
         UserJobRepository().read_by_property("user_id", user_id, read_all=True) or []
     )
