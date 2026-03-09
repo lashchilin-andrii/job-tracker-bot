@@ -41,7 +41,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
     user_jobs = get_all_user_jobs_by_user_id(message.from_user.id)
 
     if not user_jobs:
-        raise Absent
+        raise Absent("You have not saved any jobs yet.")
 
     jobs = [
         job
@@ -50,7 +50,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
     ]
 
     if not jobs:
-        raise Absent
+        raise Absent("No jobs found.")
 
     await state.set_state(CurrentJobState.job)
     await state.update_data(
