@@ -1,12 +1,30 @@
+from pathlib import Path
 from aiogram import Router, F
 from aiogram.types import Message
 
+from src.base.service import render_template
 from src.button import button_profile
-from src.user.service import show_profile
+from src.user.schema import User
+from src.user_job.service import get_jobs_stats_by_user_id
 
 router = Router()
 
 
 @router.message(F.text == button_profile.text)
 async def profile_handler(message: Message):
-    await show_profile(message)
+
+    user = User.from_telegram_user(message.from_user)
+
+    stats = get_jobs_stats_by_user_id(user.user_id)
+
+    await message.answer(
+        render_template(
+            template_path=Path(__file__).parent / "template" / "profile.html",
+            username=user.user_name,
+            first_name=user.user_first_name,
+            last_name=user.user_last_name,
+            language=user.user_language,
+            stats=stats,
+        ),
+        parse_mode="HTML",
+    )
