@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from src.base.button import ButtonBase
 from src.job.model import JobModel
 from src.job.keyboard import get_job_menu_keyboard
-from src.job.message import (
+from src.message import (
     MSG_NOT_FOUND,
     MSG_SESSION_EXPIRED,
     MSG_ENTER_KEYWORDS,

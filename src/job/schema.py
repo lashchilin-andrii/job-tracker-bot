@@ -7,6 +7,7 @@ import re
 class Job(BaseModel):
     model_config = ConfigDict(validate_by_name=True, validate_by_alias=True)
 
+    job_id: str = Field(validation_alias="id")
     job_title: str = Field(validation_alias="title")
     job_location: str = Field(validation_alias="location")
     job_snippet: str | None = Field(default=None, validation_alias="snippet")
@@ -16,7 +17,11 @@ class Job(BaseModel):
     job_link: str | None = Field(default=None, validation_alias="link")
     job_company: str | None = Field(default=None, validation_alias="company")
     job_updated: str | None = Field(default=None, validation_alias="updated")
-    job_id: int = Field(validation_alias="id")
+
+    @field_validator("job_id", mode="before")
+    @classmethod
+    def convert_job_id_to_str(cls, v: str):
+        return str(v)
 
     @field_validator("job_location", mode="after")
     @classmethod
@@ -40,6 +45,7 @@ class Job(BaseModel):
         v = re.sub(r"<.*?>", "", v)
         v = re.sub(r"&##(\d+);", r"&#\1;", v)
         v = v.replace("\xa0", " ").replace("\u200b", "")
+        v = v.replace("**", " ")
         v = re.sub(r"\s+", " ", v)
 
         v = v.strip()

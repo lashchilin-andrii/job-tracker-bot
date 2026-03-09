@@ -11,7 +11,7 @@ from src.user_job.model import UserJobModel
 from src.user_job.repository import UserJobRepository
 from src.button import button_my_jobs
 from src.job.state import CurrentJobState
-from src.job.message import MSG_NOT_FOUND
+from src.message import MSG_NOT_FOUND
 from src.base.enum import UserJobStatus
 
 

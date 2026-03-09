@@ -8,27 +8,29 @@ from src.user.repository import UserRepository
 from src.user_job.service import get_jobs_stats_by_user_id
 
 
-def get_or_create_user(user_raw) -> UserModel:
-    db_user = UserRepository().read_by_property("user_id", str(user_raw.id))
-
-    if db_user:
-        return db_user
+def create_user(message: Message):
+    if UserRepository().read_by_property("user_id", str(message.from_user.id)):
+        return
 
     return UserRepository().create_one(
         UserModel(
-            user_id=str(user_raw.id),
-            user_name=user_raw.username,
-            user_first_name=user_raw.first_name,
-            user_last_name=user_raw.last_name,
-            user_language=user_raw.language_code or "en",
+            user_id=str(message.from_user.id),
+            user_name=message.from_user.username,
+            user_first_name=message.from_user.first_name,
+            user_last_name=message.from_user.last_name,
+            user_language=message.from_user.language_code or "en",
         )
     )
+
+
+def get_user_by_id(user_id: str) -> UserModel:
+    return UserRepository().read_by_property("user_id", user_id)
 
 
 async def show_profile(message: Message):
     user_raw = message.from_user
 
-    db_user = get_or_create_user(user_raw)
+    db_user = get_user_by_id(str(user_raw.id))
 
     user = User(
         user_id=db_user.user_id,
