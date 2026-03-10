@@ -32,6 +32,7 @@ async def save_my_job(user_job: UserJob) -> UserJobModel:
 
 
 def get_all_user_jobs_by_user_id(user_id: int | str) -> list[UserJobModel]:
+    """Get all user_jobs objects by user_id."""
     user_jobs = UserJobRepository().read_all_by_property("user_id", str(user_id))
 
     if not user_jobs:
@@ -40,78 +41,28 @@ def get_all_user_jobs_by_user_id(user_id: int | str) -> list[UserJobModel]:
     return user_jobs
 
 
-async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
-    jobs: list[Job] = await JobState.get_jobs_data(state)
-    user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
-
-    if not jobs:
-        raise Absent("No such jobs saved.")
-
-    job_id = button_my_jobs.get_data_from_callback_without_prefix(callback.data)
-
-    index = next((i for i, j in enumerate(jobs) if str(j.job_id) == job_id), 0)
-
-    job = jobs[index]
-    user_job = user_jobs[index]
-
-    await state.update_data(current_job=job)
-
-    await callback.message.edit_text(
-        render_template(
-            template_path=Path(__file__).parent / "template" / "user_job.html",
-            job=job,
-            user_job=user_job,
-        ),
-        parse_mode="HTML",
-        reply_markup=get_user_job_menu_keyboard(
-            jobs=jobs,
-            current_job_id=str(job.job_id),
-            callback_prefix=button_my_jobs.callback_prefix,
-            user_job=user_job,
-        ),
-    )
-
-
-async def change_job_status(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
-    current_job: Job = await JobState.get_current_job_data(state)
-    user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
-    jobs: list[Job] = await JobState.get_jobs_data(state)
-
-    if not current_job or not jobs or not user_jobs:
-        raise Absent
-
-    index = next((i for i, j in enumerate(jobs) if j.job_id == current_job.job_id), 0)
-    user_job = user_jobs[index]
-
+def toggle_user_job_status(user_job: UserJob) -> UserJob:
     statuses = list(UserJobStatus)
-    current_idx = next(
-        (i for i, s in enumerate(statuses) if s.value == user_job.user_job_status), 0
-    )
+
+    try:
+        current_idx = next(
+            i for i, s in enumerate(statuses) if s.value == user_job.user_job_status
+        )
+    except StopIteration:
+        current_idx = 0
+
     new_status = statuses[(current_idx + 1) % len(statuses)].value
-
     user_job.user_job_status = new_status
-    UserJobRepository().update_one(user_job)
 
-    await state.update_data(current_job=current_job, user_jobs=user_jobs)
-
-    await callback.message.edit_text(
-        render_template(
-            template_path=Path(__file__).parent / "template" / "user_job.html",
-            job=current_job,
-            user_job=user_job,
-        ),
-        parse_mode="HTML",
-        reply_markup=get_user_job_menu_keyboard(
-            jobs=jobs,
-            current_job_id=str(current_job.job_id),
-            callback_prefix=button_my_jobs.callback_prefix,
-            user_job=user_job,
-        ),
+    user_job_model = UserJobModel(
+        user_id=user_job.user_id,
+        job_id=user_job.job_id,
+        user_job_status=user_job.user_job_status,
     )
+
+    UserJobRepository().update_one(user_job_model)
+
+    return user_job
 
 
 async def delete_job(callback: CallbackQuery, state: FSMContext):
@@ -121,13 +72,10 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
     user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
     jobs: list[Job] = await JobState.get_jobs_data(state)
 
-    if not job or not jobs or not user_jobs:
-        raise Absent
-
     index = next((i for i, j in enumerate(jobs) if j.job_id == job.job_id), 0)
-    user_job = user_jobs[index]
+    user_job: UserJob = user_jobs[index]
 
-    UserJobRepository().delete_one(user_job)
+    delete_user_job(user_job)
 
     del user_jobs[index]
     del jobs[index]
@@ -168,3 +116,11 @@ def get_jobs_stats_by_user_id(user_id: str) -> dict:
     stats["total"] = len(user_jobs)
 
     return stats
+
+
+def delete_user_job(user_job: UserJob) -> None:
+    """Delete a user_job by converting Pydantic model to SQLAlchemy model. Raises Absent if the object does not exist in DB."""
+    db_obj = UserJobRepository().get_from_pydantic(user_job)
+    if not db_obj:
+        raise Absent("User job not found in database")
+    UserJobRepository().delete_one(db_obj)

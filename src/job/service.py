@@ -14,8 +14,6 @@ from src.job.keyboard import get_job_menu_keyboard
 from src.message import (
     MSG_NOT_FOUND,
     MSG_SESSION_EXPIRED,
-    MSG_ENTER_KEYWORDS,
-    MSG_ENTER_LOCATION,
 )
 from src.exceptions import Absent, InvalidCallbackData
 from src.api.jooble import get_jobs
@@ -33,7 +31,7 @@ def find_job_index(jobs: list[JobModel], job_id: str) -> int:
 async def show_job_page(
     callback: CallbackQuery,
     state: FSMContext,
-    jobs: list[JobModel],
+    jobs: list[Job],
     button: ButtonBase,
 ):
     try:
@@ -77,17 +75,6 @@ async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext
     )
 
 
-async def start_job_search(message: Message, state: FSMContext):
-    await state.set_state(JobSearchParametersState.keywords)
-    await message.answer(MSG_ENTER_KEYWORDS)
-
-
-async def process_keywords_step(message: Message, state: FSMContext):
-    await state.update_data(keywords=message.text)
-    await state.set_state(JobSearchParametersState.location)
-    await message.answer(MSG_ENTER_LOCATION)
-
-
 async def process_location_step(message: Message, state: FSMContext):
     keywords = await JobSearchParametersState.get_keywords(state)
     location = message.text
@@ -117,27 +104,27 @@ async def process_location_step(message: Message, state: FSMContext):
     )
 
 
-async def save_job(job: Job | None) -> JobModel:
+async def save_job(job: Job | None) -> Job:
     """Save job if not exists."""
     if not job:
         raise Absent("No job in save_job")
-
     job_model = JobModel(**job.model_dump())
 
     try:
-        return JobRepository().create_one(job_model)
+        return Job.model_validate(JobRepository().create_one(job_model).__dict__)
     except IntegrityError:
-        return JobRepository().read_one_by_property("job_id", job_model.job_id)
+        return Job.model_validate(
+            JobRepository().read_one_by_property("job_id", job_model.job_id).__dict__
+        )
 
 
-def get_jobs_by_ids(job_ids: list[str]) -> list[JobModel]:
+def get_jobs_by_ids(job_ids: list[str]) -> list[Job]:
+    """Get list of Job object from db by their ids."""
     jobs = [
-        job
+        Job.model_validate(job.__dict__)
         for job_id in job_ids
         if (job := JobRepository().read_one_by_property("job_id", job_id))
     ]
-
     if not jobs:
         raise Absent("No jobs found for provided job IDs.")
-
     return jobs

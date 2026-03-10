@@ -1,6 +1,7 @@
 from src.database import SessionLocal
 from src.user_job.model import UserJobModel
 from src.base.repository import SQLAlchemyRepository
+from src.user_job.schema import UserJob
 
 
 class UserJobRepository(SQLAlchemyRepository):
@@ -23,3 +24,10 @@ class UserJobRepository(SQLAlchemyRepository):
             session.commit()
             session.refresh(db_obj)
             return db_obj
+
+    def get_from_pydantic(self, user_job: UserJob) -> UserJobModel | None:
+        with SessionLocal() as session:
+            return session.get(
+                self.alchemy_model,
+                {"user_id": user_job.user_id, "job_id": user_job.job_id},
+            )

@@ -2,11 +2,10 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src.message import MSG_ENTER_KEYWORDS, MSG_ENTER_LOCATION
 from src.button import button_browse_jobs
 from src.job.service import (
     handle_browse_jobs_callback,
-    start_job_search,
-    process_keywords_step,
     process_location_step,
 )
 from src.state import JobSearchParametersState
@@ -21,12 +20,15 @@ async def browse_jobs_callback_handler(callback: CallbackQuery, state: FSMContex
 
 @router.message(F.text == button_browse_jobs.text)
 async def browse_jobs_handler(message: Message, state: FSMContext):
-    await start_job_search(message, state)
+    await state.set_state(JobSearchParametersState.keywords)
+    await message.answer(MSG_ENTER_KEYWORDS)
 
 
 @router.message(JobSearchParametersState.keywords)
 async def process_keywords(message: Message, state: FSMContext):
-    await process_keywords_step(message, state)
+    await state.update_data(keywords=message.text)
+    await state.set_state(JobSearchParametersState.location)
+    await message.answer(MSG_ENTER_LOCATION)
 
 
 @router.message(JobSearchParametersState.location)
