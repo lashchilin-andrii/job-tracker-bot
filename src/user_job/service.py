@@ -6,14 +6,13 @@ from pathlib import Path
 from src.job.schema import Job
 from src.exceptions import Absent, Present
 from src.base.service import render_template
-from src.job.model import JobModel
 from src.user_job.keyboard import get_user_job_menu_keyboard
 from src.job.repository import JobRepository
 from src.user_job.schema import UserJob
 from src.user_job.model import UserJobModel
 from src.user_job.repository import UserJobRepository
 from src.button import button_my_jobs
-from src.job.state import CurrentJobState
+from src.state import JobState
 from src.message import MSG_NOT_FOUND
 from src.base.enum import UserJobStatus
 from sqlalchemy.exc import IntegrityError
@@ -52,7 +51,7 @@ async def show_my_jobs(message: Message, state: FSMContext):
     if not jobs:
         raise Absent("No jobs found.")
 
-    await state.set_state(CurrentJobState.job)
+    await state.set_state(JobState.current_job)
     await state.update_data(
         job=jobs[0],
         user_jobs=user_jobs,
@@ -78,9 +77,8 @@ async def show_my_jobs(message: Message, state: FSMContext):
 async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    data = await state.get_data()
-    jobs: list[JobModel] = data.get("jobs")
-    user_jobs: list[UserJobModel] = data.get("user_jobs")
+    jobs: list[Job] = await JobState.get_jobs_data(state)
+    user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
 
     if not jobs:
         await callback.message.answer(MSG_NOT_FOUND)
@@ -93,7 +91,7 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
     job = jobs[index]
     user_job = user_jobs[index]
 
-    await state.update_data(job=job)
+    await state.update_data(current_job=job)
 
     await callback.message.edit_text(
         render_template(
@@ -114,10 +112,9 @@ async def handle_my_jobs_callback(callback: CallbackQuery, state: FSMContext):
 async def change_job_status(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    data = await state.get_data()
-    job: JobModel = data.get("job")
-    user_jobs: list[UserJobModel] = data.get("user_jobs")
-    jobs: list[JobModel] = data.get("jobs")
+    job: Job = await JobState.get_current_job_data(state)
+    user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
+    jobs: list[Job] = await JobState.get_jobs_data(state)
 
     if not job or not jobs or not user_jobs:
         await callback.message.answer("❌ No job selected")
@@ -135,7 +132,7 @@ async def change_job_status(callback: CallbackQuery, state: FSMContext):
     user_job.user_job_status = new_status
     UserJobRepository().update_one(user_job)
 
-    await state.update_data(job=job, user_jobs=user_jobs)
+    await state.update_data(current_job=job, user_jobs=user_jobs)
 
     await callback.message.edit_text(
         render_template(
@@ -156,10 +153,9 @@ async def change_job_status(callback: CallbackQuery, state: FSMContext):
 async def delete_job(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    data = await state.get_data()
-    job: Job = await CurrentJobState.get_job_data(state)
-    user_jobs: list[UserJobModel] = data.get("user_jobs")
-    jobs: list[JobModel] = data.get("jobs")
+    job: Job = await JobState.get_current_job_data(state)
+    user_jobs: list[UserJob] = await JobState.get_user_jobs_data(state)
+    jobs: list[Job] = await JobState.get_jobs_data(state)
 
     if not job or not jobs or not user_jobs:
         await callback.message.answer("❌ No job selected")
@@ -181,7 +177,7 @@ async def delete_job(callback: CallbackQuery, state: FSMContext):
     new_job = jobs[new_index]
     new_user_job = user_jobs[new_index]
 
-    await state.update_data(job=new_job, jobs=jobs, user_jobs=user_jobs)
+    await state.update_data(current_job=new_job, jobs=jobs, user_jobs=user_jobs)
 
     await callback.message.edit_text(
         render_template(

@@ -9,7 +9,7 @@ from src.job.service import (
     process_keywords_step,
     process_location_step,
 )
-from src.job.state import JobSearchParametersState
+from src.state import JobSearchParametersState
 
 router = Router()
 

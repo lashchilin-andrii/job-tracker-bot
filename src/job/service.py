@@ -19,7 +19,7 @@ from src.message import (
 )
 from src.exceptions import Absent, InvalidCallbackData
 from src.api.jooble import get_jobs
-from src.job.state import CurrentJobState, JobSearchParametersState
+from src.state import JobState, JobSearchParametersState
 from src.button import button_browse_jobs, button_save_job
 
 
@@ -44,8 +44,8 @@ async def show_job_page(
         await callback.message.answer(MSG_NOT_FOUND)
         return
 
-    await state.set_state(CurrentJobState.job)
-    await state.update_data(job=job)
+    await state.set_state(JobState.current_job)
+    await state.update_data(current_job=job)
 
     await callback.message.edit_text(
         render_template(
@@ -64,8 +64,7 @@ async def show_job_page(
 async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    data = await state.get_data()
-    jobs = data.get("found_jobs")
+    jobs = await JobState.get_found_jobs_data(state)
 
     if not jobs:
         await callback.message.answer(MSG_SESSION_EXPIRED)
@@ -103,8 +102,8 @@ async def process_location_step(message: Message, state: FSMContext):
 
     await state.update_data(found_jobs=jobs)
 
-    await state.set_state(CurrentJobState.job)
-    await state.update_data(job=jobs[0])
+    await state.set_state(JobState.current_job)
+    await state.update_data(current_job=jobs[0])
 
     await message.answer(
         render_template(

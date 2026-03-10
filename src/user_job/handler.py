@@ -6,7 +6,7 @@ from src.exceptions import Present
 from src.message import MSG_SAVED_SUCCESSFULLY, MSG_OBJECT_EXISTS
 from src.job.model import JobModel
 from src.job.service import save_job
-from src.job.state import CurrentJobState
+from src.state import JobState
 from src.button import (
     button_save_job,
     button_my_jobs,
@@ -30,7 +30,7 @@ router = Router()
 @router.callback_query(F.data.startswith(button_save_job.callback_prefix))
 async def save_my_job_handler(callback: CallbackQuery, state: FSMContext):
     """Save my job if not saved."""
-    job: JobModel = await save_job(await CurrentJobState.get_job_data(state))
+    job: JobModel = await save_job(await JobState.get_current_job_data(state))
     try:
         await save_my_job(
             user_job=UserJob(user_id=str(callback.from_user.id), job_id=job.job_id)
