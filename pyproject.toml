@@ -11,7 +11,6 @@ dependencies = [
     "beautifulsoup4>=4.14.3",
     "faker>=40.4.0",
     "jinja2>=3.1.6",
-    "lxml>=6.0.2",
     "pre-commit>=4.5.1",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.0",
