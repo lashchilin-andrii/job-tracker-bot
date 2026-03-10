@@ -8,18 +8,17 @@ from src.user.schema import User
 from src.user_job.service import get_jobs_stats_by_user_id
 
 router = Router()
+TEMPLATE_PATH = Path(__file__).parent / "template" / "profile.html"
 
 
 @router.message(F.text == button_profile.text)
 async def profile_handler(message: Message):
-
     user = User.from_telegram_user(message.from_user)
-
     stats = get_jobs_stats_by_user_id(user.user_id)
 
     await message.answer(
         render_template(
-            template_path=Path(__file__).parent / "template" / "profile.html",
+            template_path=TEMPLATE_PATH,
             username=user.user_name,
             first_name=user.user_first_name,
             last_name=user.user_last_name,

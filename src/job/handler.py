@@ -13,6 +13,7 @@ from src.state import JobSearchParametersState, JobState
 from src.api.jooble import get_jobs
 
 router = Router()
+TEMPLATE_PATH = Path(__file__).parent / "template" / "job.html"
 
 
 @router.callback_query(F.data.startswith(button_browse_jobs.callback_prefix))
@@ -25,11 +26,9 @@ async def browse_jobs_callback_handler(callback: CallbackQuery, state: FSMContex
 
     try:
         job_id = button_browse_jobs.get_data_from_callback_without_prefix(callback.data)
-        index = next(
-            (i for i, job in enumerate(jobs) if str(job.job_id) == job_id), None
-        )
+        index = next(i for i, job in enumerate(jobs) if str(job.job_id) == job_id)
         job = jobs[index]
-    except InvalidCallbackData as e:
+    except (InvalidCallbackData, StopIteration) as e:
         await callback.message.answer(str(e))
         return
 
@@ -37,9 +36,7 @@ async def browse_jobs_callback_handler(callback: CallbackQuery, state: FSMContex
     await state.update_data(current_job=job)
 
     await callback.message.edit_text(
-        render_template(
-            template_path=Path(__file__).parent / "template" / "job.html", job=job
-        ),
+        render_template(template_path=TEMPLATE_PATH, job=job),
         parse_mode="HTML",
         reply_markup=get_job_menu_keyboard(
             jobs=jobs,
@@ -77,14 +74,11 @@ async def process_location(message: Message, state: FSMContext):
         return
 
     await state.update_data(found_jobs=jobs)
-
     await state.set_state(JobState.current_job)
     await state.update_data(current_job=jobs[0])
 
     await message.answer(
-        render_template(
-            template_path=Path(__file__).parent / "template" / "job.html", job=jobs[0]
-        ),
+        render_template(template_path=TEMPLATE_PATH, job=jobs[0]),
         parse_mode="HTML",
         reply_markup=get_job_menu_keyboard(
             jobs=jobs,
