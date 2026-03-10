@@ -1,12 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from src.job.model import JobModel
+from src.job.schema import Job
 from src.base.button import ButtonBase
 from src.button import button_previous, button_next
 from src.base.keyboard import get_keyboard_with_buttons
 
 
 def get_job_navigation_keyboard(
-    jobs: list[JobModel],
+    jobs: list[Job],
     current_index: int,
     callback_prefix: str,
 ) -> list[list[InlineKeyboardButton]]:
@@ -33,7 +33,7 @@ def get_job_navigation_keyboard(
 
 
 def get_job_menu_keyboard(
-    jobs: list[JobModel],
+    jobs: list[Job],
     current_index: int = 0,
     callback_prefix: str = "",
     include_buttons: list[list[ButtonBase]] = [[]],

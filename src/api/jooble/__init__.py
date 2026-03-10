@@ -1,3 +1,4 @@
+from src.exceptions import Absent
 from src.config import ApiConfig
 import http.client
 import json
@@ -12,4 +13,9 @@ def get_jobs(keywords: str, location: str) -> list[Job]:
     response = connection.getresponse()
     data = response.read().decode("utf-8")
     parsed = json.loads(data)
-    return [Job(**job) for job in parsed.get("jobs", [])]
+
+    jobs_data = parsed.get("jobs", [])
+    if not jobs_data:
+        raise Absent("No jobs found for the given keywords and location.")
+
+    return [Job(**job) for job in jobs_data]

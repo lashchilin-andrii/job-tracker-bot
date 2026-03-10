@@ -41,7 +41,7 @@ class JobState(BaseStatesGroup):
         )
 
     @staticmethod
-    async def get_found_jobs_data(state: FSMContext) -> Job:
+    async def get_found_jobs_data(state: FSMContext) -> list[Job]:
         return await BaseStatesGroup.get_state_value(state, "found_jobs", "found_jobs")
 
     @staticmethod
