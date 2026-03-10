@@ -1,18 +1,8 @@
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State
 from aiogram.fsm.context import FSMContext
-from src.exceptions import Absent
+from src.base.state import BaseStatesGroup
 from src.job.schema import Job
 from src.user_job.schema import UserJob
-
-
-class BaseStatesGroup(StatesGroup):
-    @staticmethod
-    async def get_state_value(state: FSMContext, key: str, name: str | None = None):
-        data = await state.get_data()
-        value = data.get(key)
-        if value is None:
-            raise Absent(f"{name or key} not found in FSM state")
-        return value
 
 
 class JobSearchParametersState(BaseStatesGroup):
