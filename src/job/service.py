@@ -67,8 +67,7 @@ async def handle_browse_jobs_callback(callback: CallbackQuery, state: FSMContext
     jobs = await JobState.get_found_jobs_data(state)
 
     if not jobs:
-        await callback.message.answer(MSG_SESSION_EXPIRED)
-        return
+        raise Absent(MSG_SESSION_EXPIRED)
 
     await show_job_page(
         callback,
@@ -129,3 +128,16 @@ async def save_job(job: Job | None) -> JobModel:
         return JobRepository().create_one(job_model)
     except IntegrityError:
         return JobRepository().read_one_by_property("job_id", job_model.job_id)
+
+
+def get_jobs_by_ids(job_ids: list[str]) -> list[JobModel]:
+    jobs = [
+        job
+        for job_id in job_ids
+        if (job := JobRepository().read_one_by_property("job_id", job_id))
+    ]
+
+    if not jobs:
+        raise Absent("No jobs found for provided job IDs.")
+
+    return jobs
