@@ -1,4 +1,5 @@
-# Job Applications Tracker Bot
+# Job Applications Tracker Bot  
+[Open in Telegram](https://t.me/job_apps_tracker_bot)
 
 A Telegram bot built with **Aiogram v3** that helps users track job applications, save jobs, manage statuses, and view statistics.
 
