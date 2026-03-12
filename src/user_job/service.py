@@ -1,6 +1,7 @@
 from collections import Counter
 
 
+from src.user_job.schema import UserJobStats
 from src.exceptions import Absent, Present
 from src.user_job.schema import UserJob
 from src.user_job.model import UserJobModel
@@ -66,13 +67,13 @@ def delete_user_job(user_job: UserJob) -> None:
     UserJobRepository().delete_one(db_obj)
 
 
-def get_jobs_stats_by_user_id(user_id: str) -> dict:
+def get_user_job_stats(user_id: str) -> UserJobStats:
     user_jobs = UserJobRepository().read_all_by_property("user_id", user_id) or []
 
     counter = Counter(uj.user_job_status for uj in user_jobs)
 
-    stats = {status.value: counter.get(status.value, 0) for status in UserJobStatus}
+    data = {status.name: counter.get(status.value, 0) for status in UserJobStatus}
 
-    stats["total"] = len(user_jobs)
+    data["total"] = len(user_jobs)
 
-    return stats
+    return UserJobStats(**data)
