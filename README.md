@@ -19,7 +19,9 @@ A Telegram bot built with **Aiogram v3** that helps users track job applications
 
 ## Screenshots / Preview
 
-> Screenshots
+![Screenshot 1](https://github.com/lashchilin-andrii/job-tracker-bot/blob/demo/screenshot_1.jpg)  
+![Screenshot 2](https://github.com/lashchilin-andrii/job-tracker-bot/blob/demo/screenshot_2.jpg)  
+![Screenshot 3](https://github.com/lashchilin-andrii/job-tracker-bot/blob/demo/screenshot_3.jpg)  
 
 ---
 
