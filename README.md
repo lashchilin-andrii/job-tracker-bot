@@ -117,24 +117,6 @@ Perfect! Here’s your **updated README** with a **Docker section** added and th
 
 ---
 
-# Job Applications Tracker Bot
-
-A Telegram bot built with **Aiogram v3** that helps users track job applications, save jobs, manage statuses, and view statistics.
-
----
-
-## Features
-
-* Save jobs to your personal tracker.
-* View all saved jobs with details.
-* Change the status of a job (Applied, Accepted, Rejected).
-* Delete jobs from your tracker.
-* Interactive menu using **inline buttons**.
-* Persistent state management using **FSMContext**.
-* HTML-based message rendering for clean presentation.
-
----
-
 ## Docker
 
 You can run the bot easily using Docker.
