@@ -113,10 +113,6 @@ Interact with your bot in Telegram:
 
 ---
 
-Perfect! Here’s your **updated README** with a **Docker section** added and the installation/usage section removed:
-
----
-
 ## Docker
 
 You can run the bot easily using Docker.
