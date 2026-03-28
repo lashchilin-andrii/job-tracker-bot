@@ -104,7 +104,7 @@ Interact with your bot in Telegram:
 │   ├── message.py
 │   ├── state.py
 │   ├── user/                # User-related models, services, handlers
-│   │   └── base/ structure
+│   │   └── base/            # same structure as in base/
 │   └── user_job/            # User-job relations, handlers, services
 │   │   └── base/            # same structure as in base/
 ├── test/                    # Unit tests
