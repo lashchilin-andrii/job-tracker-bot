@@ -99,14 +99,14 @@ Interact with your bot in Telegram:
 │   ├── database.py
 │   ├── exceptions.py
 │   ├── job/                 # Job-related models, services, handlers
-│   │   └── base/ structure
+│   │   └── base/            # same structure as in base/
 │   ├── logging.py
 │   ├── message.py
 │   ├── state.py
 │   ├── user/                # User-related models, services, handlers
 │   │   └── base/ structure
 │   └── user_job/            # User-job relations, handlers, services
-│   │   └── base/ structure
+│   │   └── base/            # same structure as in base/
 ├── test/                    # Unit tests
 └── uv.lock                  # Dependency lock
 ```
